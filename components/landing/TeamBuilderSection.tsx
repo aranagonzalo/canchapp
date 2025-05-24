@@ -1,6 +1,6 @@
 // src/components/landing/TeamBuilderSection.tsx
 import Image from "next/image";
-import { Users, Trophy, CalendarCheck } from "lucide-react";
+import { AvatarStack } from "../AvatarStack";
 
 export function TeamBuilderSection() {
     return (
@@ -55,31 +55,32 @@ export function TeamBuilderSection() {
                 </div>
 
                 {/* Imagen + overlay */}
-                <div className="flex-1 relative rounded-xl overflow-hidden z-20 border border-slate-800 shadow">
-                    <Image
-                        src="/images/team-sample.jpg"
-                        alt="Equipo en la cancha"
-                        width={600}
-                        height={400}
-                        className="rounded-xl object-cover w-full h-auto z-20"
-                    />
+                <div className="flex-1 relative border border-slate-800 shadow rounded-xl z-10 overflow-hidden">
+                    {/* Contenedor para imagen y overlay con bordes compartidos */}
+                    <div className="relative w-full h-full">
+                        <Image
+                            src="/images/equipos/equipo3.jpeg"
+                            alt="Equipo en la cancha"
+                            width={600}
+                            height={400}
+                            className="object-cover w-full h-auto"
+                        />
 
-                    {/* Overlay inferior */}
-                    <div className="z-20 absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 text-white">
-                        <div className="flex items-center gap-2 mb-2">
-                            {[1, 2, 3, 4, 5].map((n) => (
-                                <div
-                                    key={n}
-                                    className="w-3 h-3 rounded-full bg-gray-400"
-                                />
-                            ))}
+                        {/* Overlay inferior */}
+                        <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 text-white z-20 pointer-events-none">
+                            <div className="pointer-events-auto">
+                                <AvatarStack />
+                                <p className="text-green-400 font-semibold tracking-tight drop-shadow">
+                                    Los Campeones{" "}
+                                    <span className="text-slate-200 font-medium">
+                                        – 5 jugadores
+                                    </span>
+                                </p>
+                                <button className="mt-3 bg-gradient-to-r from-custom-green to-custom-dark-green hover:bg-from-custom-dark-green hover:to-emerald-700 text-white px-4 py-2 rounded-md text-sm font-normal tracking-tight">
+                                    Crear mi Equipo
+                                </button>
+                            </div>
                         </div>
-                        <p className="text-green-400 font-medium">
-                            Los Campeones – 5 jugadores
-                        </p>
-                        <button className="mt-3 bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-semibold">
-                            Crear mi Equipo
-                        </button>
                     </div>
                 </div>
             </div>

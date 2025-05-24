@@ -40,7 +40,7 @@ export function HowItWorks() {
                             key={index}
                             className="bg-gradient-to-br from-[#1f2938] via-[#1f2938] to-[#1e2d28] p-6 rounded-xl flex flex-col items-center text-center"
                         >
-                            <div className="bg-green-500 p-4 rounded-full mb-4">
+                            <div className="bg-gradient-to-br shadow from-custom-green to-custom-dark-green p-4 rounded-full mb-4">
                                 {step.icon}
                             </div>
                             <h3 className="text-xl font-bold mb-2">

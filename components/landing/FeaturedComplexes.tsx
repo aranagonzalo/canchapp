@@ -1,5 +1,6 @@
-// src/components/sections/FeaturedComplexes.tsx
 import Image from "next/image";
+import { StarRating } from "@/components/StarRating";
+import { MapPin } from "lucide-react";
 
 const complexes = [
     {
@@ -10,29 +11,29 @@ const complexes = [
         reviews: 120,
         price: "$5000/h",
         available: 4,
-        image: "/images/complex1.jpg",
+        image: "/images/canchas/cancha1.jpeg",
         tag: "TOP 1",
     },
     {
         id: 2,
         name: "Complejo Deportivo 2",
         location: "Resistencia, Chaco",
-        rating: 4.6,
+        rating: 2.6,
         reviews: 120,
         price: "$5000/h",
         available: 4,
-        image: "/images/complex2.jpg",
+        image: "/images/canchas/cancha2.jpeg",
         tag: "TOP 2",
     },
     {
         id: 3,
         name: "Complejo Deportivo 3",
         location: "Resistencia, Chaco",
-        rating: 4.3,
+        rating: 3.8,
         reviews: 120,
         price: "$5000/h",
         available: 4,
-        image: "/images/complex3.jpg",
+        image: "/images/canchas/cancha3.jpeg",
         tag: "TOP 3",
     },
 ];
@@ -65,25 +66,34 @@ export default function FeaturedComplexes() {
                                     fill
                                     className="object-cover"
                                 />
-                                <span className="absolute top-2 right-2 bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                                <span className="absolute top-2 right-2 text-white text-xs font-semibold px-2 py-1 rounded-full bg-gradient-to-r from-custom-green to-custom-dark-green shadow">
                                     {c.tag}
                                 </span>
+                                <div className="absolute bottom-2 left-2 text-white z-10">
+                                    <h4 className="text-base font-semibold leading-none drop-shadow">
+                                        {c.name}
+                                    </h4>
+                                    <div className="flex items-center text-sm text-gray-300 gap-1 drop-shadow">
+                                        <MapPin className="w-4 h-4" />
+                                        <span>{c.location}</span>
+                                    </div>
+                                </div>
+                                {/* dark overlay gradient for readability */}
+                                <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-black/70 to-transparent z-[1]" />
                             </div>
-                            <div className="p-4">
-                                <h4 className="text-lg font-bold mb-1">
-                                    {c.name}
-                                </h4>
-                                <p className="text-sm text-gray-400 mb-2">
-                                    📍 {c.location}
-                                </p>
-                                <p className="text-sm mb-1">
-                                    ⭐ {c.rating} ({c.reviews} reseñas)
-                                </p>
-                                <p className="text-sm text-green-400 mb-1">
+
+                            <div className="p-4 pt-3">
+                                <StarRating
+                                    rating={c.rating}
+                                    totalReviews={c.reviews}
+                                />
+
+                                <p className="text-sm mb-1 bg-gradient-to-r from-custom-green to-custom-dark-green bg-clip-text text-transparent font-medium">
                                     {c.available} canchas disponibles
                                 </p>
+
                                 <div className="flex justify-between items-center mt-4">
-                                    <span className="text-green-500 font-semibold">
+                                    <span className="font-semibold bg-gradient-to-r from-custom-green to-custom-dark-green bg-clip-text text-transparent">
                                         {c.price}
                                     </span>
                                     <button className="bg-gray-700 hover:bg-gray-600 text-white text-sm px-4 py-1.5 rounded-md">

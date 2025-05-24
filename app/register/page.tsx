@@ -276,29 +276,6 @@ export default function RegisterPage() {
                                                         locale={es}
                                                         showOutsideDays
                                                         className="bg-[#0b1120] text-white p-3"
-                                                        components={{
-                                                            PreviousMonthButton:
-                                                                (props) => (
-                                                                    <button
-                                                                        {...props}
-                                                                        className="p-1 text-white"
-                                                                        aria-label="Mes anterior"
-                                                                    >
-                                                                        <ChevronLeft className="size-4" />
-                                                                    </button>
-                                                                ),
-                                                            NextMonthButton: (
-                                                                props
-                                                            ) => (
-                                                                <button
-                                                                    {...props}
-                                                                    className="p-1 text-white"
-                                                                    aria-label="Mes siguiente"
-                                                                >
-                                                                    <ChevronRight className="size-4" />
-                                                                </button>
-                                                            ),
-                                                        }}
                                                     />
                                                 </PopoverContent>
                                             </Popover>

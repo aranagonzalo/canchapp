@@ -4,7 +4,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useUser } from "@/context/userContext";
 
-const publicRoutes = ["/", "/login", "/register", "/reset-password"];
+const publicRoutes = [
+    "/",
+    "/login",
+    "/register",
+    "/reset-password",
+    "/terms",
+    "/privacy",
+];
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const { user, isLoading } = useUser();

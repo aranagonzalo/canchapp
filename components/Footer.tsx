@@ -1,3 +1,5 @@
+import { Mail, MapPin } from "lucide-react";
+
 // src/components/Footer.tsx
 export default function Footer() {
     return (
@@ -50,12 +52,12 @@ export default function Footer() {
                     </h4>
                     <ul className="space-y-2 text-sm">
                         <li>
-                            <a href="/terminos" className="hover:text-white">
+                            <a href="/terms" className="hover:text-white">
                                 Términos y Condiciones
                             </a>
                         </li>
                         <li>
-                            <a href="/privacidad" className="hover:text-white">
+                            <a href="/privacy" className="hover:text-white">
                                 Política de Privacidad
                             </a>
                         </li>
@@ -67,19 +69,12 @@ export default function Footer() {
                     <h4 className="text-white font-semibold text-lg mb-4">
                         Contáctanos
                     </h4>
-                    <p className="text-sm mb-2">📧 hola@canchapp.com</p>
-                    <p className="text-sm mb-4">📍 Lima, Perú</p>
-                    <div className="flex space-x-4">
-                        <a href="#" className="hover:text-white">
-                            🌐
-                        </a>
-                        <a href="#" className="hover:text-white">
-                            📘
-                        </a>
-                        <a href="#" className="hover:text-white">
-                            📸
-                        </a>
-                    </div>
+                    <p className="text-sm mb-2 flex gap-2 items-center">
+                        <Mail className="w-4 h-4 " /> hola@canchapp.com
+                    </p>
+                    <p className="text-sm mb-4 flex gap-2 items-center">
+                        <MapPin className="w-4 h-4 " /> Chaco, Argentina
+                    </p>
                 </div>
             </div>
 

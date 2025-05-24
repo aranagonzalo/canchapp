@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, CalendarIcon } from "lucide-react";
+import {
+    Calendar,
+    CalendarIcon,
+    ChevronLeft,
+    ChevronRight,
+} from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -22,6 +27,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { es } from "date-fns/locale";
+import { DayPicker } from "react-day-picker";
 
 // Tipado
 
@@ -216,6 +222,7 @@ export default function RegisterPage() {
                                     const selectedDate = value
                                         ? new Date(value)
                                         : undefined;
+
                                     return (
                                         <div
                                             key={field}
@@ -240,15 +247,15 @@ export default function RegisterPage() {
                                                                   new Date(
                                                                       value
                                                                   ),
-                                                                  "dd/MM/yyyy"
+                                                                  "dd/MM/yyyy",
+                                                                  { locale: es }
                                                               )
                                                             : "Seleccionar fecha"}
                                                         <CalendarIcon className="ml-2 h-4 w-4 text-white" />
                                                     </button>
                                                 </PopoverTrigger>
                                                 <PopoverContent className="w-auto p-0 bg-[#0b1120] text-white border border-slate-700">
-                                                    <DatePicker
-                                                        locale={es}
+                                                    <DayPicker
                                                         mode="single"
                                                         selected={selectedDate}
                                                         onSelect={(date) =>
@@ -266,8 +273,32 @@ export default function RegisterPage() {
                                                                 })
                                                             )
                                                         }
-                                                        initialFocus
-                                                        className="bg-[#0b1120] text-white"
+                                                        locale={es}
+                                                        showOutsideDays
+                                                        className="bg-[#0b1120] text-white p-3"
+                                                        components={{
+                                                            PreviousMonthButton:
+                                                                (props) => (
+                                                                    <button
+                                                                        {...props}
+                                                                        className="p-1 text-white"
+                                                                        aria-label="Mes anterior"
+                                                                    >
+                                                                        <ChevronLeft className="size-4" />
+                                                                    </button>
+                                                                ),
+                                                            NextMonthButton: (
+                                                                props
+                                                            ) => (
+                                                                <button
+                                                                    {...props}
+                                                                    className="p-1 text-white"
+                                                                    aria-label="Mes siguiente"
+                                                                >
+                                                                    <ChevronRight className="size-4" />
+                                                                </button>
+                                                            ),
+                                                        }}
                                                     />
                                                 </PopoverContent>
                                             </Popover>

@@ -85,7 +85,7 @@ export default function Navbar() {
                     <span className="font-medium">{user.nombre}</span>
                     <button
                         onClick={handleLogout}
-                        className="text-sm px-3 py-1 rounded bg-red-600 hover:bg-red-500 transition"
+                        className="text-sm px-3 py-1 rounded bg-red-500 hover:bg-red-400 transition"
                     >
                         Cerrar sesión
                     </button>

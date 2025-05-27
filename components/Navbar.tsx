@@ -4,6 +4,15 @@ import { useUser } from "@/context/userContext";
 import { useRouter } from "next/navigation";
 import { Calendar } from "lucide-react";
 import Link from "next/link";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function Navbar() {
     const { user, logout } = useUser();
@@ -56,13 +65,19 @@ export default function Navbar() {
                     {user.tipo === "jugador" ? (
                         <>
                             <Link href="/home" className="hover:text-green-400">
-                                Mis Reservas
+                                Resumen
+                            </Link>
+                            <Link href="/home" className="hover:text-green-400">
+                                Reservas
+                            </Link>
+                            <Link href="/home" className="hover:text-green-400">
+                                Equipos
                             </Link>
                             <Link
                                 href="/complejos"
                                 className="hover:text-green-400"
                             >
-                                Buscar Canchas
+                                Complejos
                             </Link>
                         </>
                     ) : (
@@ -82,13 +97,49 @@ export default function Navbar() {
                         </>
                     )}
 
-                    <span className="font-medium">{user.nombre}</span>
-                    <button
-                        onClick={handleLogout}
-                        className="text-sm px-3 py-1 rounded bg-red-500 hover:bg-red-400 transition"
-                    >
-                        Cerrar sesión
-                    </button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild className="ml-16">
+                            <button className="flex items-center gap-2 outline-none">
+                                <Avatar className="h-8 w-8">
+                                    <AvatarFallback className="bg-gradient-to-r from-custom-dark-green to-custom-green text-white font-medium text-base">
+                                        {user.nombre
+                                            ?.split(" ")
+                                            .map((n) => n[0])
+                                            .join("")
+                                            .toUpperCase()
+                                            .slice(0, 2)}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <span className="text-sm font-medium hover:text-green-400 cursor-pointer">
+                                    {user.nombre}
+                                </span>
+                            </button>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent className="w-56 bg-[#0b1220] text-white border border-slate-700">
+                            <DropdownMenuLabel className="text-xs text-gray-400">
+                                {user.nombre} {user.apellido}
+                            </DropdownMenuLabel>
+                            <DropdownMenuLabel className="text-xs text-gray-400">
+                                {user.mail}
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem asChild>
+                                <Link
+                                    href="/profile"
+                                    className="cursor-pointer"
+                                >
+                                    Ir al Perfil
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={handleLogout}
+                                className="text-red-500 cursor-pointer"
+                            >
+                                Cerrar sesión
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             )}
         </nav>

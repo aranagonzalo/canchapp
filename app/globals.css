@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin 'tailwind-scrollbar';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -127,6 +128,10 @@ html {
     body {
         @apply bg-background text-foreground;
     }
+}
+
+* {
+    @apply scrollbar-thin scrollbar-track-[#0b1120] scrollbar-thumb-neutral-600 hover:scrollbar-thumb-neutral-500;
 }
 
 .input {

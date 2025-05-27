@@ -3,8 +3,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 type User = {
+    mail: string;
     id: number;
     nombre: string;
+    apellido: string;
     tipo: "jugador" | "admin";
 };
 

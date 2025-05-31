@@ -121,7 +121,7 @@ export default function RegisterPage() {
 
         try {
             // Paso 1: Registro
-            const response = await fetch(`${API_URL}/registro`, {
+            const response = await fetch(`api/auth/register`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -148,7 +148,7 @@ export default function RegisterPage() {
             toast.success("Registro exitoso!");
 
             // Paso 2: Login automático
-            const loginResponse = await fetch(`${API_URL}/ingreso`, {
+            const loginResponse = await fetch(`api/auth/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -164,43 +164,47 @@ export default function RegisterPage() {
 
             const loginData = await loginResponse.json();
 
-            if (loginData.Status === "Respuesta ok") {
-                toast.success("Inicio de sesión exitoso");
-                login(loginData); // guarda en contexto
-                router.push("/home");
-
-                type === "jugador"
-                    ? setJugador({
-                          nombre: "",
-                          apellido: "",
-                          email: "",
-                          email2: "",
-                          password: "",
-                          password2: "",
-                          telefono: "",
-                          fecha_nac: "",
-                          genero: "",
-                      })
-                    : setAdmin({
-                          complejo: "",
-                          cuit: "",
-                          provincia: "",
-                          ciudad: "",
-                          calle: "",
-                          altura: "",
-                          telefono: "",
-                          adminNombre: "",
-                          adminApellido: "",
-                          adminEmail: "",
-                          adminEmail2: "",
-                          adminPassword: "",
-                          adminPassword2: "",
-                          adminCelular: "",
-                      });
-            } else {
-                toast.error("Error al iniciar sesión automáticamente.");
+            if (!loginResponse.ok) {
+                toast.error(
+                    loginData.message ||
+                        "Error al iniciar sesión automáticamente"
+                );
                 setLoading(false);
+                return null;
             }
+
+            toast.success("Inicio de sesión exitoso");
+            login(loginData); // guarda en contexto
+            router.push("/home");
+
+            type === "jugador"
+                ? setJugador({
+                      nombre: "",
+                      apellido: "",
+                      email: "",
+                      email2: "",
+                      password: "",
+                      password2: "",
+                      telefono: "",
+                      fecha_nac: "",
+                      genero: "",
+                  })
+                : setAdmin({
+                      complejo: "",
+                      cuit: "",
+                      provincia: "",
+                      ciudad: "",
+                      calle: "",
+                      altura: "",
+                      telefono: "",
+                      adminNombre: "",
+                      adminApellido: "",
+                      adminEmail: "",
+                      adminEmail2: "",
+                      adminPassword: "",
+                      adminPassword2: "",
+                      adminCelular: "",
+                  });
         } catch (error) {
             console.error("Error de red:", error);
             toast.error("No se pudo conectar al servidor.");

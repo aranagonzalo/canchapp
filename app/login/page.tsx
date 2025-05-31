@@ -8,8 +8,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast, Toaster } from "sonner";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 const LoginPage = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -20,7 +18,7 @@ const LoginPage = () => {
 
     async function handleLogin(email: string, password: string) {
         try {
-            const response = await fetch(`${API_URL}/ingreso`, {
+            const response = await fetch(`/api/auth/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -33,18 +31,13 @@ const LoginPage = () => {
 
             const data = await response.json();
 
-            if (data.Message) {
-                toast.error("Credenciales incorrectas.");
+            if (!response.ok) {
+                toast.error(data.message || "Error al iniciar sesión");
                 return null;
             }
 
-            if (data.Status === "Respuesta ok") {
-                toast.success("Inicio de sesión exitoso");
-                return data; // contiene nombre, tipo, id
-            }
-
-            toast.error("Respuesta inesperada del servidor.");
-            return null;
+            toast.success("Inicio de sesión exitoso");
+            return data;
         } catch (err) {
             console.error("Error de red:", err);
             toast.error("No se pudo conectar al servidor.");

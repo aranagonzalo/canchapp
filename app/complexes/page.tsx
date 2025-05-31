@@ -28,7 +28,7 @@ export default function ComplejosPage() {
     const router = useRouter();
 
     useEffect(() => {
-        fetch("http://localhost:3001/popups")
+        fetch("api/complexes")
             .then((res) => res.json())
             .then((data: Complejo[]) => {
                 setComplejos(data);
@@ -140,13 +140,16 @@ export default function ComplejosPage() {
                                             onCloseClick={() =>
                                                 setSelected(null)
                                             }
-                                        >
-                                            <div className="text-sm">
-                                                <p className="font-bold">
+                                            className="w-[280px] h-[100px] !overflow-hidden"
+                                            headerContent={
+                                                <div className="text-black text-lg font-medium w-full h-full">
                                                     {selected.nombre_complejo}
-                                                </p>
+                                                </div>
+                                            }
+                                        >
+                                            <div className="!overflow-hidden text-black">
                                                 <p>{selected.direccion}</p>
-                                                <p>📞 {selected.telefono}</p>
+                                                <p>{selected.telefono}</p>
                                             </div>
                                         </InfoWindow>
                                     )}

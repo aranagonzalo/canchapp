@@ -2,7 +2,7 @@
 
 import { useUser } from "@/context/userContext";
 import { useRouter } from "next/navigation";
-import { Calendar } from "lucide-react";
+import { Calendar, Search } from "lucide-react";
 import Link from "next/link";
 import {
     DropdownMenu,
@@ -13,6 +13,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "./ui/button";
 
 export default function Navbar() {
     const { user, logout } = useUser();
@@ -67,17 +68,28 @@ export default function Navbar() {
                             <Link href="/home" className="hover:text-green-400">
                                 Resumen
                             </Link>
-                            <Link href="/home" className="hover:text-green-400">
+                            <Link
+                                href="/home?tab=reservas"
+                                className="hover:text-green-400"
+                            >
                                 Reservas
                             </Link>
-                            <Link href="/home" className="hover:text-green-400">
+                            <Link
+                                href="/home?tab=equipos"
+                                className="hover:text-green-400"
+                            >
                                 Equipos
                             </Link>
                             <Link
-                                href="/complejos"
+                                href="/home?tab=jugadores"
                                 className="hover:text-green-400"
                             >
-                                Complejos
+                                Jugadores
+                            </Link>
+                            <Link href="/complexes" className="">
+                                <Button className="flex gap-1.5 items-center bg-gradient-to-r from-amber-600 to-amber-400 hover:from-amber-700 hover:to-amber-500 cursor-pointer text-white text-sm">
+                                    <Search className="!w-3 !h-3" /> Complejos
+                                </Button>
                             </Link>
                         </>
                     ) : (
@@ -98,7 +110,10 @@ export default function Navbar() {
                     )}
 
                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild className="ml-16">
+                        <DropdownMenuTrigger
+                            asChild
+                            className="ml-16 hover:text-green-400 cursor-pointer"
+                        >
                             <button className="flex items-center gap-2 outline-none">
                                 <Avatar className="h-8 w-8">
                                     <AvatarFallback className="bg-gradient-to-r from-custom-dark-green to-custom-green text-white font-medium text-base">
@@ -110,20 +125,20 @@ export default function Navbar() {
                                             .slice(0, 2)}
                                     </AvatarFallback>
                                 </Avatar>
-                                <span className="text-sm font-medium hover:text-green-400 cursor-pointer">
+                                <span className="text-sm font-medium">
                                     {user.nombre}
                                 </span>
                             </button>
                         </DropdownMenuTrigger>
 
-                        <DropdownMenuContent className="w-56 bg-[#0b1220] text-white border border-slate-700">
+                        <DropdownMenuContent className="w-56 bg-[#0b1220] text-white border border-slate-800 shadow">
                             <DropdownMenuLabel className="text-xs text-gray-400">
                                 {user.nombre} {user.apellido}
                             </DropdownMenuLabel>
                             <DropdownMenuLabel className="text-xs text-gray-400">
                                 {user.mail}
                             </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
+                            <DropdownMenuSeparator className="bg-slate-800" />
                             <DropdownMenuItem asChild>
                                 <Link
                                     href="/profile"

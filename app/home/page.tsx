@@ -5,40 +5,64 @@ import { useUser } from "@/context/userContext";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Calendar, Users, Clock, MapPin, Star } from "lucide-react";
+import AvailableTeamsPlayer from "./AvailableTeamsPlayer";
+import AvailableTeamsAdmin from "./AvailableTeamsAdmin";
+import MyTeamsPlayer from "./MyTeamsPlayer";
+import Players from "./Players";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function HomePage() {
     const { user } = useUser();
 
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const tabParam = searchParams.get("tab") || "resumen";
+    const subtabParam = searchParams.get("subtab") || "disponibles";
+
+    const updateURL = (newTab: string, newSubtab?: string) => {
+        const params = new URLSearchParams();
+        params.set("tab", newTab);
+        if (newTab === "equipos" && newSubtab) {
+            params.set("subtab", newSubtab);
+        }
+        router.replace(`/home?${params.toString()}`);
+    };
+
     return (
-        <main className="min-h-screen bg-[#0b1120] text-white pt-24 px-6 pb-16">
+        <main className="min-h-screen bg-gradient-to-b to-[#0b1120] from-[#030712] text-white pt-24 px-6 pb-16">
             <header className="flex items-center justify-between mb-8 max-w-[1200px] mx-auto">
                 <h1 className="text-3xl font-bold">Dashboard</h1>
-                <Button className="bg-gradient-to-r from-custom-dark-green to-custom-green !hover:bg-from-green-600 hover:to-green-700 cursor-pointer text-white text-sm">
-                    + Nueva Reserva
-                </Button>
             </header>
             <Tabs
-                defaultValue="resumen"
+                value={tabParam}
+                onValueChange={(value) => updateURL(value)}
                 className="w-full max-w-[1200px] mx-auto"
             >
                 <TabsList className="bg-[#1a1f2b] border border-gray-800 rounded-md mb-6 gap-1">
                     <TabsTrigger
                         value="resumen"
-                        className="data-[state=active]:bg-gray-700 text-white px-4 py-2 text-sm cursor-pointer shadow"
+                        className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-700 px-4 py-2 text-sm cursor-pointer data-[state=active]:border data-[state=active]:border-gray-800 shadow rounded"
                     >
                         Resumen
                     </TabsTrigger>
                     <TabsTrigger
                         value="reservas"
-                        className="data-[state=active]:bg-gray-700 text-white px-4 py-2 text-sm cursor-pointer shadow"
+                        className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-700 px-4 py-2 text-sm cursor-pointer data-[state=active]:border data-[state=active]:border-gray-800 shadow rounded"
                     >
                         Reservas
                     </TabsTrigger>
                     <TabsTrigger
                         value="equipos"
-                        className="data-[state=active]:bg-gray-700 text-white px-4 py-2 text-sm cursor-pointer shadow"
+                        className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-700 px-4 py-2 text-sm cursor-pointer data-[state=active]:border data-[state=active]:border-gray-800 shadow rounded"
                     >
                         Equipos
+                    </TabsTrigger>
+                    <TabsTrigger
+                        value="jugadores"
+                        className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-700 px-4 py-2 text-sm cursor-pointer data-[state=active]:border data-[state=active]:border-gray-800 shadow rounded"
+                    >
+                        Jugadores
                     </TabsTrigger>
                 </TabsList>
 
@@ -241,9 +265,44 @@ export default function HomePage() {
                 </TabsContent>
 
                 <TabsContent value="equipos">
-                    <div className="text-gray-400 text-center py-10">
-                        Aún no hay equipos disponibles.
-                    </div>
+                    {user?.tipo === "jugador" ? (
+                        <Tabs
+                            value={subtabParam}
+                            onValueChange={(value) =>
+                                updateURL("equipos", value)
+                            }
+                            className="w-full"
+                        >
+                            <TabsList className="bg-[#1a1f2b] border border-gray-800 rounded-md mb-6 gap-1">
+                                <TabsTrigger
+                                    value="disponibles"
+                                    className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-700 px-4 py-2 text-sm cursor-pointer data-[state=active]:border data-[state=active]:border-gray-800 shadow rounded"
+                                >
+                                    Equipos disponibles
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="mis"
+                                    className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-700 px-4 py-2 text-sm cursor-pointer data-[state=active]:border data-[state=active]:border-gray-800 shadow rounded"
+                                >
+                                    Mis equipos
+                                </TabsTrigger>
+                            </TabsList>
+
+                            <TabsContent value="disponibles">
+                                <AvailableTeamsPlayer id_jugador={user?.id} />
+                            </TabsContent>
+
+                            <TabsContent value="mis">
+                                <MyTeamsPlayer id_jugador={user?.id} />
+                            </TabsContent>
+                        </Tabs>
+                    ) : (
+                        <AvailableTeamsAdmin />
+                    )}
+                </TabsContent>
+
+                <TabsContent value="jugadores">
+                    <Players />
                 </TabsContent>
             </Tabs>
         </main>

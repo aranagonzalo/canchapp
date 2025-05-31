@@ -130,7 +130,7 @@ html {
     }
 }
 
-* {
+.scrollbar {
     @apply scrollbar-thin scrollbar-track-[#0b1120] scrollbar-thumb-neutral-600 hover:scrollbar-thumb-neutral-500;
 }
 

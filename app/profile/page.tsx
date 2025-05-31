@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@/context/userContext";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { User2 } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -19,18 +19,21 @@ export default function ProfilePage() {
     useEffect(() => {
         const fetchPerfil = async () => {
             try {
-                const response = await fetch(`${API_URL}/perfil`, {
+                const response = await fetch(`/api/profile`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({ tipo: user?.tipo, id: user?.id }),
                 });
-                const data = await response.json();
-                if (data.Status === "Respuesta ok") {
-                    setPerfil(data);
-                    setForm({ ...data, mailViejo: data.mail }); // mailViejo requerido para update
+
+                if (!response.ok) {
+                    throw new Error("Respuesta del servidor no OK");
                 }
+
+                const data = await response.json();
+                setPerfil(data);
+                setForm({ ...data, mailViejo: data.mail || "" }); // mailViejo solo si existe
             } catch (error) {
                 console.error("Error al cargar el perfil:", error);
                 toast.error("No se pudo cargar el perfil.");
@@ -45,26 +48,23 @@ export default function ProfilePage() {
     };
 
     const handleSubmit = async () => {
-        if (!form) return;
+        if (!form || !user?.id) return;
+
         setLoading(true);
         try {
-            const response = await fetch(
-                `${API_URL}/perfil/update/${user?.id}`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(form),
-                }
-            );
+            const response = await fetch(`/api/profile/update/${user.id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(form),
+            });
 
             const resData = await response.json();
 
             if (response.ok) {
                 toast.success("Perfil actualizado correctamente.");
             } else {
-                // Mostrar mensaje del backend si está disponible
                 toast.error(
                     resData.message || "Error al actualizar el perfil."
                 );
@@ -73,8 +73,9 @@ export default function ProfilePage() {
         } catch (err) {
             console.error("Error de red:", err);
             toast.error("No se pudo conectar al servidor.");
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     if (!form) {
@@ -90,7 +91,10 @@ export default function ProfilePage() {
             <Toaster richColors position="top-right" />
             <main className="min-h-screen bg-gradient-to-b from-[#0b1120] to-[#030712] text-white pt-36 px-6 pb-16 w-full">
                 <div className="max-w-[700px] mx-auto bg-slate-950 shadow rounded-xl border border-gray-900 p-10">
-                    <h1 className="text-2xl font-bold mb-6">Mi Perfil</h1>
+                    <div className="text-2xl font-bold mb-6 flex gap-2 items-center">
+                        <User2 className="text-emerald-400 w-5 h-5" />
+                        <p>Mi Perfil</p>
+                    </div>
 
                     <div className="space-y-4">
                         <div>
@@ -99,7 +103,7 @@ export default function ProfilePage() {
                                 name="nombre"
                                 value={form.nombre}
                                 onChange={handleChange}
-                                className="w-full mt-1 p-2 bg-[#1a1f2b] text-white rounded-md placeholder-gray-500 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-custom-green"
+                                className="w-full mt-1 p-2 bg-[#1a1f2b] text-white rounded-md placeholder-gray-500 border border-gray-800 focus:outline-none focus:ring-2 focus:ring-custom-green"
                             />
                         </div>
 
@@ -111,7 +115,7 @@ export default function ProfilePage() {
                                         name="apellido"
                                         value={form.apellido}
                                         onChange={handleChange}
-                                        className="w-full mt-1 p-2 bg-[#1a1f2b] text-white rounded-md placeholder-gray-500 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-custom-green"
+                                        className="w-full mt-1 p-2 bg-[#1a1f2b] text-white rounded-md placeholder-gray-500 border border-gray-800 focus:outline-none focus:ring-2 focus:ring-custom-green"
                                     />
                                 </div>
 
@@ -119,9 +123,9 @@ export default function ProfilePage() {
                                     <Label className="mb-1">Sexo</Label>
                                     <input
                                         name="sexo"
-                                        value={form.sexo}
+                                        value={form.sexo ?? ""}
                                         onChange={handleChange}
-                                        className="w-full mt-1 p-2 bg-[#1a1f2b] text-white rounded-md placeholder-gray-500 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-custom-green"
+                                        className="w-full mt-1 p-2 bg-[#1a1f2b] text-white rounded-md placeholder-gray-500 border border-gray-800 focus:outline-none focus:ring-2 focus:ring-custom-green"
                                     />
                                 </div>
                             </>
@@ -133,7 +137,7 @@ export default function ProfilePage() {
                                 name="telefono"
                                 value={form.telefono}
                                 onChange={handleChange}
-                                className="w-full mt-1 p-2 bg-[#1a1f2b] text-white rounded-md placeholder-gray-500 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-custom-green"
+                                className="w-full mt-1 p-2 bg-[#1a1f2b] text-white rounded-md placeholder-gray-500 border border-gray-800 focus:outline-none focus:ring-2 focus:ring-custom-green"
                             />
                         </div>
 
@@ -143,7 +147,7 @@ export default function ProfilePage() {
                                 name="mail"
                                 value={form.mail}
                                 onChange={handleChange}
-                                className="w-full mt-1 p-2 bg-[#1a1f2b] text-white rounded-md placeholder-gray-500 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-custom-green"
+                                className="w-full mt-1 p-2 bg-[#1a1f2b] text-white rounded-md placeholder-gray-500 border border-gray-800 focus:outline-none focus:ring-2 focus:ring-custom-green"
                             />
                         </div>
 

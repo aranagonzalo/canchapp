@@ -30,7 +30,7 @@ export default function Banner() {
                             Reservar Ahora
                         </a>
                         <a
-                            href="/complejos"
+                            href="/complexes"
                             className="bg-white text-black px-6 py-3 rounded-full font-semibold"
                         >
                             Ver Complejos

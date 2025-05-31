@@ -8,8 +8,6 @@ import { toast, Toaster } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { User2 } from "lucide-react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export default function ProfilePage() {
     const { user } = useUser();
     const [loading, setLoading] = useState(false);

@@ -88,8 +88,6 @@ const initialAdminData: AdminFormState = {
     adminCelular: "",
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export default function RegisterPage() {
     const [jugador, setJugador] = useState<JugadorState>(initialJugadorData);
     const [admin, setAdmin] = useState<AdminFormState>(initialAdminData);

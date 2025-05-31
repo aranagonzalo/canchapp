@@ -22,13 +22,15 @@ function calcularEdad(fechaNacimiento: string): number {
 
 export async function GET(
     _req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const id = (await params).id;
+
     try {
         const { data: equipoData, error: equipoError } = await db
             .from("equipo")
             .select("id_jugadores")
-            .eq("id_equipo", params.id)
+            .eq("id_equipo", id)
             .single();
 
         if (equipoError || !equipoData?.id_jugadores) {

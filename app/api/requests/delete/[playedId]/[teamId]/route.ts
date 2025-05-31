@@ -3,10 +3,10 @@ import { db } from "@/lib/supabase";
 
 export async function DELETE(
     _req: Request,
-    { params }: { params: { id_jugador: string; id_equipo: string } }
+    { params }: { params: Promise<{ id_jugador: string; id_equipo: string }> }
 ) {
-    const id_jugador = parseInt(params.id_jugador);
-    const id_equipo = parseInt(params.id_equipo);
+    const id_jugador = parseInt((await params).id_jugador);
+    const id_equipo = parseInt((await params).id_equipo);
 
     if (isNaN(id_jugador) || isNaN(id_equipo)) {
         return NextResponse.json(

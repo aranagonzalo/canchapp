@@ -5,9 +5,9 @@ export const dynamic = "force-static";
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const id_jugador = parseInt(params.id);
+    const id_jugador = parseInt((await params).id);
 
     try {
         const { data: equipos, error: errorEquipos } = await db

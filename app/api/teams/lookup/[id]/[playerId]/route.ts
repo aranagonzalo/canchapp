@@ -21,9 +21,9 @@ function calcularEdad(fechaNacimiento: string): number {
 
 export async function GET(
     req: NextRequest,
-    context: { params: { id_equipo: string; id_jugador: string } }
+    { params }: { params: Promise<{ id_equipo: string; id_jugador: string }> }
 ) {
-    const { id_equipo } = context.params;
+    const { id_equipo } = await params;
 
     const { data: jugadores, error } = await db
         .from("equipo")

@@ -12,10 +12,10 @@ function isValidPhone(phone: string) {
 
 export async function PUT(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const id = params.id;
+        const id = (await params).id;
         const data = await req.json();
 
         // Validación de correo

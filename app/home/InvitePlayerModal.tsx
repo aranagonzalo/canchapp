@@ -31,7 +31,7 @@ interface Jugador {
     sexo: string | null;
 }
 
-export default function PlayersInTeamModal({
+export default function InvitePlayerModal({
     equipoId,
     jugadorId,
     modalOpen,

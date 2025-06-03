@@ -18,10 +18,11 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useUser } from "@/context/userContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import EquiposDisponiblesModal, { Equipo } from "./EquiposDisponiblesModal";
 
 interface Jugador {
     id_jug: number;
@@ -50,7 +51,11 @@ export default function Players() {
         { label: "18+", value: "18+" },
     ];
     const [modalOpen, setModalOpen] = useState(false);
-    const [equipoIdActivo, setEquipoIdActivo] = useState<number | null>(null);
+    const [jugadorIdActivo, setJugadorIdActivo] = useState<number | null>(null);
+    const [modalEquipos, setModalEquipos] = useState<Equipo[]>([]);
+    const [loadingJugadorId, setLoadingJugadorId] = useState<number | null>(
+        null
+    );
 
     const { user } = useUser();
 
@@ -105,8 +110,46 @@ export default function Players() {
         ...new Set(jugadores.map((j) => j[key]).filter(Boolean)),
     ];
 
+    const handleVerSolicitud = async (idJugador: number) => {
+        if (!userId) return;
+        setLoadingJugadorId(idJugador);
+        try {
+            const res = await fetch(
+                `/api/teams-invite?id_jugador=${idJugador}&id_capitan=${userId}`
+            );
+            const data = await res.json();
+
+            if (!data || data.length === 0) {
+                toast.warning(
+                    "No tienes equipos disponibles para invitar a este jugador."
+                );
+                return;
+            }
+
+            setModalEquipos(data);
+            setJugadorIdActivo(idJugador);
+            setModalOpen(true);
+        } catch (err) {
+            toast.error("Error al consultar equipos.");
+        } finally {
+            setLoadingJugadorId(null);
+        }
+    };
+
     return (
         <div>
+            <Toaster richColors position="top-right" />
+            {modalOpen && jugadorIdActivo !== null && (
+                <EquiposDisponiblesModal
+                    open={modalOpen}
+                    onClose={() => setModalOpen(false)}
+                    equipos={modalEquipos}
+                    id_jugador={jugadorIdActivo}
+                    id_capitan={userId!}
+                    refetchEquipos={() => handleVerSolicitud(jugadorIdActivo)}
+                />
+            )}
+
             <div className="flex flex-wrap gap-3 mb-6 items-center">
                 <Input
                     placeholder="Búsqueda por nombre"
@@ -281,9 +324,23 @@ export default function Players() {
                                         : "Información privada"}
                                 </TableCell>
                                 <TableCell>
-                                    <button className="bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 font-medium rounded cursor-pointer text-xs">
-                                        Ver solicitud
-                                    </button>
+                                    <Button
+                                        className="bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 font-medium rounded cursor-pointer text-xs"
+                                        onClick={() =>
+                                            handleVerSolicitud(jugador.id_jug)
+                                        }
+                                        disabled={
+                                            loadingJugadorId === jugador.id_jug
+                                        }
+                                    >
+                                        {loadingJugadorId === jugador.id_jug ? (
+                                            <div className="flex items-center gap-2">
+                                                <LoadingSpinner />
+                                            </div>
+                                        ) : (
+                                            "Ver solicitud"
+                                        )}
+                                    </Button>
                                 </TableCell>
                             </TableRow>
                         ))}

@@ -10,6 +10,8 @@ import AvailableTeamsAdmin from "./AvailableTeamsAdmin";
 import MyTeamsPlayer from "./MyTeamsPlayer";
 import Players from "./Players";
 import { useRouter, useSearchParams } from "next/navigation";
+import MyReservations from "./MyReservations";
+import MyRequests from "./MyRequests";
 
 export default function HomePage() {
     const { user } = useUser();
@@ -32,7 +34,10 @@ export default function HomePage() {
     return (
         <main className="min-h-screen bg-gradient-to-b to-[#0b1120] from-[#030712] text-white pt-24 px-6 pb-16">
             <header className="flex items-center justify-between mb-8 max-w-[1200px] mx-auto">
-                <h1 className="text-3xl font-bold">Dashboard</h1>
+                <h1 className="text-3xl font-bold">
+                    {tabParam[0].toUpperCase() +
+                        tabParam.slice(1, tabParam.length)}
+                </h1>
             </header>
             <Tabs
                 value={tabParam}
@@ -63,6 +68,12 @@ export default function HomePage() {
                         className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-700 px-4 py-2 text-sm cursor-pointer data-[state=active]:border data-[state=active]:border-gray-800 shadow rounded"
                     >
                         Jugadores
+                    </TabsTrigger>
+                    <TabsTrigger
+                        value="solicitudes"
+                        className="data-[state=active]:bg-gray-700 data-[state=active]:text-white text-gray-700 px-4 py-2 text-sm cursor-pointer data-[state=active]:border data-[state=active]:border-gray-800 shadow rounded"
+                    >
+                        Solicitudes
                     </TabsTrigger>
                 </TabsList>
 
@@ -259,9 +270,7 @@ export default function HomePage() {
                 </TabsContent>
 
                 <TabsContent value="reservas">
-                    <div className="text-gray-400 text-center py-10">
-                        Aún no hay reservas disponibles.
-                    </div>
+                    {user?.tipo === "jugador" ? <MyReservations /> : null}
                 </TabsContent>
 
                 <TabsContent value="equipos">
@@ -303,6 +312,10 @@ export default function HomePage() {
 
                 <TabsContent value="jugadores">
                     <Players />
+                </TabsContent>
+
+                <TabsContent value="solicitudes">
+                    {user?.tipo === "jugador" ? <MyRequests /> : null}
                 </TabsContent>
             </Tabs>
         </main>

@@ -66,28 +66,11 @@ export default function Navbar() {
                     {user.tipo === "jugador" ? (
                         <>
                             <Link href="/home" className="hover:text-green-400">
-                                Resumen
+                                Inicio
                             </Link>
-                            <Link
-                                href="/home?tab=reservas"
-                                className="hover:text-green-400"
-                            >
-                                Reservas
-                            </Link>
-                            <Link
-                                href="/home?tab=equipos"
-                                className="hover:text-green-400"
-                            >
-                                Equipos
-                            </Link>
-                            <Link
-                                href="/home?tab=jugadores"
-                                className="hover:text-green-400"
-                            >
-                                Jugadores
-                            </Link>
+
                             <Link href="/complexes" className="">
-                                <Button className="flex gap-1.5 items-center bg-gradient-to-r from-amber-600 to-amber-400 hover:from-amber-700 hover:to-amber-500 cursor-pointer text-white text-sm">
+                                <Button className="flex gap-1.5 items-center bg-gradient-to-r from-custom-dark-green to-custom-green hover:from-emerald-700 hover:to-emerald-600 cursor-pointer text-white text-sm">
                                     <Search className="!w-3 !h-3" /> Complejos
                                 </Button>
                             </Link>

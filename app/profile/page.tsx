@@ -105,28 +105,25 @@ export default function ProfilePage() {
                             />
                         </div>
 
+                        <div>
+                            <Label className="mb-1">Apellido</Label>
+                            <input
+                                name="apellido"
+                                value={form.apellido}
+                                onChange={handleChange}
+                                className="w-full mt-1 p-2 bg-[#1a1f2b] text-white rounded-md placeholder-gray-500 border border-gray-800 focus:outline-none focus:ring-2 focus:ring-custom-green"
+                            />
+                        </div>
                         {user?.tipo === "jugador" && (
-                            <>
-                                <div>
-                                    <Label className="mb-1">Apellido</Label>
-                                    <input
-                                        name="apellido"
-                                        value={form.apellido}
-                                        onChange={handleChange}
-                                        className="w-full mt-1 p-2 bg-[#1a1f2b] text-white rounded-md placeholder-gray-500 border border-gray-800 focus:outline-none focus:ring-2 focus:ring-custom-green"
-                                    />
-                                </div>
-
-                                <div>
-                                    <Label className="mb-1">Sexo</Label>
-                                    <input
-                                        name="sexo"
-                                        value={form.sexo ?? ""}
-                                        onChange={handleChange}
-                                        className="w-full mt-1 p-2 bg-[#1a1f2b] text-white rounded-md placeholder-gray-500 border border-gray-800 focus:outline-none focus:ring-2 focus:ring-custom-green"
-                                    />
-                                </div>
-                            </>
+                            <div>
+                                <Label className="mb-1">Sexo</Label>
+                                <input
+                                    name="sexo"
+                                    value={form.sexo ?? ""}
+                                    onChange={handleChange}
+                                    className="w-full mt-1 p-2 bg-[#1a1f2b] text-white rounded-md placeholder-gray-500 border border-gray-800 focus:outline-none focus:ring-2 focus:ring-custom-green"
+                                />
+                            </div>
                         )}
 
                         <div>

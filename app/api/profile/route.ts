@@ -14,19 +14,13 @@ export async function POST(req: Request) {
         }
 
         if (tipo === "administrador") {
-            const { data: complejoData, error: complejoError } = await db
-                .from("complejo")
+            const { data: adminData, error: adminError } = await db
+                .from("administrador")
                 .select("*")
                 .eq("id_admin", id)
                 .single();
 
-            const { data: adminData, error: adminError } = await db
-                .from("administrador")
-                .select("contrasena")
-                .eq("id_admin", id)
-                .single();
-
-            if (complejoError || adminError || !complejoData || !adminData) {
+            if (adminError || !adminData) {
                 return NextResponse.json(
                     {
                         message:
@@ -37,10 +31,10 @@ export async function POST(req: Request) {
             }
 
             return NextResponse.json({
-                nombre: complejoData.nombre_complejo,
-                direccion: complejoData.direccion,
-                telefono: complejoData.telefono,
-                contrasena: adminData.contrasena,
+                nombre: adminData.nombre,
+                apellido: adminData.apellido,
+                telefono: adminData.telefono,
+                mail: adminData.mail,
             });
         }
 

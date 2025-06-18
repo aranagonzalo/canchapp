@@ -32,6 +32,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
 import { useUser } from "@/context/userContext";
+import { useNotifications } from "@/hooks";
 
 interface Equipo {
     id_equipo: number;
@@ -45,7 +46,7 @@ interface Equipo {
 
 export default function MyTeamsPlayer({ id_jugador }: { id_jugador: number }) {
     const { user } = useUser();
-
+    const { notificar } = useNotifications();
     const [equipos, setEquipos] = useState<Equipo[]>([]);
     const [loading, setLoading] = useState(true);
     const [deletingEquipoId, setDeletingEquipoId] = useState<number | null>(
@@ -59,6 +60,15 @@ export default function MyTeamsPlayer({ id_jugador }: { id_jugador: number }) {
         publico: true,
         tipo_equipo: "",
     });
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const createParam = params.get("create");
+
+        if (createParam === "true") {
+            setModalOpen(true);
+        }
+    }, []);
 
     const fetchEquipos = async () => {
         try {
@@ -120,6 +130,11 @@ export default function MyTeamsPlayer({ id_jugador }: { id_jugador: number }) {
             });
             if (!res.ok) throw new Error("Error al crear equipo");
             toast.success("Equipo creado correctamente");
+            await notificar({
+                titulo: "Nuevo equipo creado",
+                mensaje: `¡Felicidades! Has creado el equipo: ${form.nombre_equipo}. Ahora puedes reservar algún complejo.`,
+                url: "/complexes",
+            });
             setModalOpen(false);
             fetchEquipos();
         } catch (err) {
@@ -191,7 +206,24 @@ export default function MyTeamsPlayer({ id_jugador }: { id_jugador: number }) {
             <Toaster richColors position="top-right" />
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">Mis equipos</h2>
-                <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+                <Dialog
+                    open={modalOpen}
+                    onOpenChange={(open) => {
+                        setModalOpen(open);
+                        if (!open) {
+                            const params = new URLSearchParams(
+                                window.location.search
+                            );
+                            if (params.has("create")) {
+                                params.delete("create");
+                                const newUrl = `${
+                                    window.location.pathname
+                                }?${params.toString()}`;
+                                window.history.replaceState({}, "", newUrl);
+                            }
+                        }
+                    }}
+                >
                     <DialogTrigger asChild>
                         <Button className="bg-gradient-to-r from-amber-600 to-amber-400 hover:from-amber-700 hover:to-amber-500 cursor-pointer text-white text-sm">
                             + Crear Equipo

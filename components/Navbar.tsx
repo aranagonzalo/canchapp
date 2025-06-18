@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "./ui/button";
+import Image from "next/image";
+import NotificacionesIcon from "./NotificacionesIcon";
 
 export default function Navbar() {
     const { user, logout } = useUser();
@@ -28,7 +30,13 @@ export default function Navbar() {
         <nav className="bg-[#0b1220]/80 shadow shadow-black/40 backdrop-blur-2xl text-white py-4 px-6 flex items-center justify-between fixed top-0 left-0 w-full z-50">
             <a href="/" className="flex items-center gap-2 text-xl font-bold">
                 <div className="bg-gradient-to-br from-green-400 to-green-700 p-1.5 rounded-md">
-                    <Calendar />
+                    <Image
+                        src="/logo-canchapp.png"
+                        alt="Logo Canchapp"
+                        width={100}
+                        height={100}
+                        className="w-6 h-6"
+                    />
                 </div>
                 <span className="text-white">CanchApp</span>
             </a>
@@ -65,6 +73,7 @@ export default function Navbar() {
                 <div className="flex items-center gap-4 text-sm">
                     {user.tipo === "jugador" ? (
                         <>
+                            <NotificacionesIcon />
                             <Link href="/home" className="hover:text-green-400">
                                 Inicio
                             </Link>
@@ -77,17 +86,30 @@ export default function Navbar() {
                         </>
                     ) : (
                         <>
+                            <NotificacionesIcon />
+                            <Link
+                                href="/admin/home"
+                                className="hover:text-green-400"
+                            >
+                                Inicio
+                            </Link>
+                            <Link
+                                href="/admin/complex"
+                                className="hover:text-green-400"
+                            >
+                                Complejo
+                            </Link>
                             <Link
                                 href="/admin/canchas"
                                 className="hover:text-green-400"
                             >
-                                Mis Canchas
+                                Canchas
                             </Link>
                             <Link
                                 href="/admin/reservas"
                                 className="hover:text-green-400"
                             >
-                                Reservas del Día
+                                Reservas
                             </Link>
                         </>
                     )}
@@ -115,6 +137,10 @@ export default function Navbar() {
                         </DropdownMenuTrigger>
 
                         <DropdownMenuContent className="w-56 bg-[#0b1220] text-white border border-slate-800 shadow">
+                            <DropdownMenuLabel className="text-xs text-emerald-500 ">
+                                {user.tipo[0].toUpperCase() +
+                                    user.tipo.slice(1, user.tipo.length)}
+                            </DropdownMenuLabel>
                             <DropdownMenuLabel className="text-xs text-gray-400">
                                 {user.nombre} {user.apellido}
                             </DropdownMenuLabel>

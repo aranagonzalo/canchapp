@@ -138,3 +138,54 @@ html {
     @apply w-full p-2 rounded-md bg-[#1a1f2b] text-white placeholder-gray-500 
       border border-gray-600 focus:outline-none focus:ring-2 focus:ring-custom-green;
 }
+
+.fc .fc-col-header {
+    background-color: #1a1f2b !important;
+}
+
+.fc .fc-col-header-cell-cushion {
+    font-weight: 400;
+    font-size: 14px !important;
+    color: #99a1af !important;
+    text-align: center;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    height: 100% !important;
+}
+
+.fc-toolbar-title {
+    font-size: 16px !important; /* O el tamaño que desees */
+    font-weight: 300 !important; /* Opcional, si quieres hacerlo más fino */
+    text-align: center;
+    color: #99a1af !important;
+}
+
+.fc-theme-standard .fc-scrollgrid {
+    border: none;
+}
+
+.fc .fc-scrollgrid-section-sticky > * {
+    background: transparent;
+}
+
+.fc-timegrid-col.fc-day-today {
+    background-color: rgba(0, 150, 105, 0.1) !important;
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+    border: 1px solid #1e2939 !important;
+}
+
+/* Opcional: también puedes oscurecer la línea de la hora actual si lo deseas */
+/* .fc-timegrid-now-indicator-line {
+    border-top: 1px solid #1e2939 !important;
+} */
+
+.fc-col-header-cell .fc-day .fc-day-wed .fc-day-today {
+    justify-content: center !important;
+    display: flex !important;
+    align-items: center !important;
+    height: 100% !important;
+}

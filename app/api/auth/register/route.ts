@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 
 // Helpers
 function isValidString(str: string) {
-    const regex = /^[a-zA-Z ]+$/;
+    const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ ]+$/;
     return (
         typeof str === "string" &&
         str.length >= 3 &&
@@ -51,7 +51,6 @@ export async function POST(req: Request) {
             posicion,
             pierna_habil,
             sexo,
-            usuario,
             email,
             email2,
             password,

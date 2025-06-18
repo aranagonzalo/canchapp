@@ -1,4 +1,5 @@
 import { Mail, MapPin } from "lucide-react";
+import Image from "next/image";
 
 // src/components/Footer.tsx
 export default function Footer() {
@@ -7,7 +8,14 @@ export default function Footer() {
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
                 {/* CanchApp */}
                 <div>
-                    <h4 className="text-white font-semibold text-lg mb-4">
+                    <h4 className="items-center flex gap-2 text-white font-semibold text-lg mb-4">
+                        <Image
+                            src="/logo-canchapp.png"
+                            alt="Logo Canchapp"
+                            width={100}
+                            height={100}
+                            className="w-6 h-6"
+                        />
                         CanchApp
                     </h4>
                     <p className="text-sm">

@@ -12,12 +12,55 @@ import Players from "./Players";
 import { useRouter, useSearchParams } from "next/navigation";
 import MyReservations from "./MyReservations";
 import MyRequests from "./MyRequests";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import { StarRating } from "@/components/StarRating";
+
+interface Dashboard {
+    complejos_recomendados: {
+        id_complejo: number;
+        total_reservas: number;
+        nombre_complejo: string;
+        direccion: string;
+    }[];
+
+    equipos: {
+        id_equipo: number;
+        nombre_equipo: string;
+        cant_max: number;
+        capitan: number;
+        id_jugadores: number[];
+        ubicacion: string;
+        proximo_partido: string | null;
+        publico: boolean;
+    }[];
+
+    reservas: {
+        listado: Reserva[]; // O mejor aún: Reserva[] si defines su tipo
+        total: number;
+        ultimos_30_dias: number;
+    };
+}
+
+interface Reserva {
+    id: number;
+    fecha: string;
+    horas: string[];
+    estado: string;
+    nombre_complejo: string;
+    direccion: string;
+    id_equipo: number;
+}
 
 export default function HomePage() {
     const { user } = useUser();
 
     const router = useRouter();
     const searchParams = useSearchParams();
+
+    const [loading, setLoading] = useState(true);
+    const [dashboard, setDashboard] = useState<Dashboard | null>(null);
 
     const tabParam = searchParams.get("tab") || "resumen";
     const subtabParam = searchParams.get("subtab") || "disponibles";
@@ -30,6 +73,30 @@ export default function HomePage() {
         }
         router.replace(`/home?${params.toString()}`);
     };
+
+    const fetchReservas = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/dashboard?id_jugador=${user?.id}`);
+            const data = await res.json();
+            setDashboard(data);
+        } catch (err) {
+            toast.error("Error al obtener reservas.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (user?.id) fetchReservas();
+    }, [user?.id]);
+
+    if (loading)
+        return (
+            <div className="min-h-screen bg-gradient-to-b from-[#0b1120] to-[#030712] text-white flex flex-col gap-2 items-center justify-center">
+                <LoadingSpinner /> Cargando...
+            </div>
+        );
 
     return (
         <main className="min-h-screen bg-gradient-to-b to-[#0b1120] from-[#030712] text-white pt-24 px-6 pb-16">
@@ -89,10 +156,11 @@ export default function HomePage() {
                                     <Clock className="text-emerald-400 w-4 h-4 " />
                                 </div>
                                 <h2 className="text-3xl font-semibold my-4">
-                                    3
+                                    {dashboard?.reservas?.total}
                                 </h2>
                                 <p className="text-xs text-gray-500">
-                                    +1 desde el mes pasado
+                                    {dashboard?.reservas?.ultimos_30_dias} en el
+                                    último mes
                                 </p>
                             </div>
                         </div>
@@ -106,10 +174,16 @@ export default function HomePage() {
                                 </div>
 
                                 <h2 className="text-3xl font-semibold my-4">
-                                    2
+                                    {dashboard?.equipos?.length}
                                 </h2>
                                 <p className="text-xs text-gray-500">
-                                    Eres capitán de 1 equipo
+                                    Eres capitán de{" "}
+                                    {
+                                        dashboard?.equipos?.filter(
+                                            (e) => e.capitan === user?.id
+                                        ).length
+                                    }{" "}
+                                    equipo(s)
                                 </p>
                             </div>
                         </div>
@@ -141,7 +215,7 @@ export default function HomePage() {
                                 Tus próximos partidos programados
                             </p>
                             <ul className="space-y-3">
-                                {[1, 2, 3].map((i) => (
+                                {dashboard?.reservas?.listado?.map((r, i) => (
                                     <li
                                         key={i}
                                         className="bg-[#1a1f2b] p-4 rounded-xl flex justify-between items-center border border-gray-800"
@@ -152,18 +226,37 @@ export default function HomePage() {
                                             </div>
                                             <div>
                                                 <p className="font-semibold">
-                                                    Complejo Deportivo {i}
+                                                    {r.nombre_complejo}
                                                 </p>
                                                 <p className="text-sm text-gray-400">
-                                                    Mañana, 19:00 - 20:00
+                                                    {r.fecha}
                                                 </p>
                                             </div>
                                         </div>
-                                        <Button className="cursor-pointer bg-gradient-to-r from-custom-dark-green to-custom-green hover:from-emerald-700 hover:to-emerald-600 text-white px-4 py-1.5 text-sm rounded-md">
+                                        <Button
+                                            onClick={() =>
+                                                router.push(
+                                                    "/home?tab=reservas"
+                                                )
+                                            }
+                                            className="cursor-pointer bg-gradient-to-r from-custom-dark-green to-custom-green hover:from-emerald-700 hover:to-emerald-600 text-white px-4 py-1.5 text-sm rounded-md"
+                                        >
                                             Ver
                                         </Button>
                                     </li>
                                 ))}
+                                {dashboard?.reservas?.listado?.length === 0 && (
+                                    <p className="text-sm text-gray-500 italic text-center mt-2">
+                                        No tienes reservas próximas registradas.
+                                    </p>
+                                )}
+                                {/* Crear nueva reserva */}
+                                <Button
+                                    onClick={() => router.push("/complexes")}
+                                    className="cursor-pointer w-full mt-2 text-white bg-[#2a2f40] hover:bg-[#363c50] border border-[#3b445c] text-sm"
+                                >
+                                    + Reservar un complejo
+                                </Button>
                             </ul>
                         </section>
 
@@ -177,50 +270,60 @@ export default function HomePage() {
                             </p>
 
                             {/* Equipo 1 */}
-                            <div className="bg-[#1a1f2b] p-4 rounded-xl mb-3 flex justify-between items-center border border-gray-800">
-                                <div className="flex items-start gap-3">
-                                    <div className="bg-green-600/20 p-2 rounded-md">
-                                        <Users className="w-5 h-5 text-green-400" />
+                            {dashboard?.equipos?.map((equipo) => (
+                                <div
+                                    key={equipo.id_equipo}
+                                    className="bg-[#1a1f2b] p-4 rounded-xl mb-3 flex justify-between items-center border border-gray-800"
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <div className="bg-green-600/20 p-2 rounded-md">
+                                            <Users className="w-5 h-5 text-green-400" />
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold flex items-center gap-2">
+                                                {equipo.nombre_equipo}
+                                            </p>
+                                            <p className="text-sm text-gray-400">
+                                                {equipo.capitan ===
+                                                    user?.id && (
+                                                    <span className="bg-gradient-to-br from-custom-dark-green to-custom-green text-white text-xs px-2 py-0.5 rounded-full">
+                                                        Capitán
+                                                    </span>
+                                                )}{" "}
+                                                {equipo.id_jugadores.length}{" "}
+                                                jugadores
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="font-semibold flex items-center gap-2">
-                                            Los Campeones
-                                        </p>
-                                        <p className="text-sm text-gray-400">
-                                            <span className="bg-gradient-to-br from-custom-dark-green to-custom-green text-white text-xs px-2 py-0.5 rounded-full">
-                                                Capitán
-                                            </span>{" "}
-                                            8 jugadores
-                                        </p>
-                                    </div>
+                                    <Button
+                                        onClick={() =>
+                                            router.push(
+                                                "/home?tab=equipos&subtab=mis"
+                                            )
+                                        }
+                                        className="cursor-pointer bg-gradient-to-r from-custom-dark-green to-custom-green hover:from-emerald-700 hover:to-emerald-600 text-white px-4 py-1.5 text-sm rounded-md"
+                                    >
+                                        {equipo.capitan === user?.id
+                                            ? "Gestionar"
+                                            : "Ver"}
+                                    </Button>
                                 </div>
-                                <Button className="cursor-pointer bg-gradient-to-r from-custom-dark-green to-custom-green hover:from-emerald-700 hover:to-emerald-600 text-white px-4 py-1.5 text-sm rounded-md">
-                                    Gestionar
-                                </Button>
-                            </div>
-
-                            {/* Equipo 2 */}
-                            <div className="bg-[#1a1f2b] p-4 rounded-xl mb-3 flex justify-between items-center border border-[#2c3446]">
-                                <div className="flex items-start gap-3">
-                                    <div className="bg-green-600/20 p-2 rounded-md">
-                                        <Users className="w-5 h-5 text-green-400" />
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold">
-                                            Amigos FC
-                                        </p>
-                                        <p className="text-sm text-gray-400">
-                                            10 jugadores
-                                        </p>
-                                    </div>
-                                </div>
-                                <Button className="cursor-pointer bg-gradient-to-r from-custom-dark-green to-custom-green hover:from-emerald-700 hover:to-emerald-600 text-white px-4 py-1.5 text-sm rounded-md">
-                                    Ver
-                                </Button>
-                            </div>
+                            ))}
+                            {dashboard?.equipos?.length === 0 && (
+                                <p className="text-sm text-gray-500 italic text-center mt-2">
+                                    Aún no formas parte de ningún equipo.
+                                </p>
+                            )}
 
                             {/* Crear nuevo equipo */}
-                            <Button className="cursor-pointer w-full mt-2 text-white bg-[#2a2f40] hover:bg-[#363c50] border border-[#3b445c] text-sm">
+                            <Button
+                                onClick={() =>
+                                    router.push(
+                                        "/home?tab=equipos&subtab=mis&create=true"
+                                    )
+                                }
+                                className="cursor-pointer w-full mt-2 text-white bg-[#2a2f40] hover:bg-[#363c50] border border-[#3b445c] text-sm"
+                            >
                                 + Crear Nuevo Equipo
                             </Button>
                         </section>
@@ -234,31 +337,28 @@ export default function HomePage() {
                             Basado en tus reservas anteriores
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            {[1, 2, 3, 4].map((i) => (
+                            {dashboard?.complejos_recomendados?.map((c) => (
                                 <div
-                                    key={i}
-                                    className="bg-[#1a1f2b] p-4 rounded-xl"
+                                    key={c.id_complejo}
+                                    className="bg-[#1a1f2b] p-4 rounded-xl border border-gray-800"
                                 >
-                                    <div className="h-24 bg-gray-700 mb-3 rounded"></div>
-                                    <div className="flex items-center text-yellow-400 mb-1">
-                                        {Array.from({ length: 4 }).map(
-                                            (_, idx) => (
-                                                <Star
-                                                    key={idx}
-                                                    className="w-4 h-4 fill-yellow-400"
-                                                />
-                                            )
-                                        )}
-                                    </div>
+                                    <img
+                                        className="h-24 w-full object-cover bg-gray-700 mb-3 rounded"
+                                        src="/images/banners/banner4.jpg"
+                                    />
+                                    <StarRating
+                                        rating={4.2}
+                                        totalReviews={36}
+                                    />
                                     <p className="font-semibold">
-                                        Complejo Deportivo {i}
+                                        {c.nombre_complejo}
                                     </p>
                                     <p className="text-sm text-gray-400 flex items-center">
-                                        <MapPin className="w-4 h-4 mr-1" />{" "}
-                                        Resistencia, Chaco
+                                        <MapPin className="w-4 h-4 mr-1" />
+                                        {c.direccion}
                                     </p>
                                     <a
-                                        href="#"
+                                        href={`/complex/${c.id_complejo}`}
                                         className="text-sm text-green-400 hover:underline inline-block mt-2"
                                     >
                                         Ver

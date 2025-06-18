@@ -60,7 +60,11 @@ const LoginPage = () => {
         if (user) {
             console.log("Usuario autenticado:", user);
             login(user);
-            router.push("/home");
+            if (user.tipo === "jugador") {
+                router.push("/home");
+            } else {
+                router.push("/admin/home");
+            }
         }
     };
 

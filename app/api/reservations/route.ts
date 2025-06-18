@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     const jugadorId = parseInt(id);
 
     try {
-        // Equipos donde el jugador participa
+        // 1. Equipos donde el jugador participa
         const { data: equiposData, error: equiposError } = await db
             .from("equipo")
             .select("id_equipo, nombre_equipo")
@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
 
         const id_equipos = equiposData.map((e) => e.id_equipo);
 
+        // 2. Reservas hechas por esos equipos
         const { data: reservasData, error: reservasError } = await db
             .from("reservas")
             .select("*")
@@ -32,61 +33,38 @@ export async function GET(req: NextRequest) {
 
         if (reservasError) throw reservasError;
 
-        const id_agendas = [
-            ...new Set(
-                reservasData
-                    .filter((r) => r.id_agenda !== null)
-                    .map((r) => r.id_agenda)
-            ),
-        ];
-
-        const { data: agendaData, error: agendaError } = await db
-            .from("agenda")
-            .select("*")
-            .in("id_agenda", id_agendas);
-
-        if (agendaError) throw agendaError;
-
         const id_complejos = [
-            ...new Set(
-                agendaData
-                    .filter((a) => a.id_complejo !== null)
-                    .map((a) => a.id_complejo)
-            ),
+            ...new Set(reservasData.map((r) => r.id_complejo)),
         ];
-        const id_canchas = [
-            ...new Set(
-                agendaData
-                    .filter((a) => a.id_cancha !== null)
-                    .map((a) => a.id_cancha)
-            ),
-        ];
+        const id_canchas = [...new Set(reservasData.map((r) => r.id_cancha))];
 
+        // 3. Obtener información de complejo y cancha
         const { data: complejoData } = await db
             .from("complejo")
-            .select("*")
+            .select("id_complejo, nombre_complejo, direccion, telefono")
             .in("id_complejo", id_complejos);
 
         const { data: canchaData } = await db
             .from("cancha")
-            .select("*")
+            .select("id_cancha, nombre_cancha")
             .in("id_cancha", id_canchas);
 
-        const agendaEnriquecida = agendaData.map((item) => {
+        // 4. Formatear respuesta
+        const reservasEnriquecidas = reservasData.map((res) => {
             const equipo = equiposData.find(
-                (e) => e.id_equipo === item.id_equipo
+                (e) => e.id_equipo === res.id_equipo
             );
-            const complejo = complejoData!.find(
-                (c) => c.id_complejo === item.id_complejo
+            const complejo = complejoData?.find(
+                (c) => c.id_complejo === res.id_complejo
             );
-            const cancha = canchaData!.find(
-                (c) => c.id_cancha === item.id_cancha
+            const cancha = canchaData?.find(
+                (c) => c.id_cancha === res.id_cancha
             );
 
             return {
-                fecha: item.fecha,
-                hora: item.hora,
-                estado: item.disponibilidad,
+                fecha: res.fecha,
+                horas: res.horas, // array de strings: ["08", "09"]
+                estado: res.estado, // string o boolean
                 nombre_equipo: equipo?.nombre_equipo || "Sin equipo",
                 nombre_complejo: complejo?.nombre_complejo || "",
                 direccion_complejo: complejo?.direccion || "",
@@ -95,7 +73,7 @@ export async function GET(req: NextRequest) {
             };
         });
 
-        return NextResponse.json(agendaEnriquecida);
+        return NextResponse.json(reservasEnriquecidas);
     } catch (err) {
         console.error("Error al obtener reservas hechas:", err);
         return NextResponse.json(

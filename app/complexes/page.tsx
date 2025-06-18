@@ -2,8 +2,7 @@
 
 import {
     APIProvider,
-    Map,
-    AdvancedMarker,
+    Map as GoogleMap,
     InfoWindow,
 } from "@vis.gl/react-google-maps";
 import { ListCheck, MapPin, Phone } from "lucide-react";
@@ -15,17 +14,61 @@ interface Complejo {
     nombre_complejo: string;
     direccion: string;
     telefono: string;
+    ciudad: string;
     latitud: number;
     longitud: number;
 }
+
+const geocodeCache: Map<string, { lat: number; lng: number }> = new Map();
 
 export default function ComplejosPage() {
     const [complejos, setComplejos] = useState<Complejo[]>([]);
     const [filtered, setFiltered] = useState<Complejo[]>([]);
     const [busqueda, setBusqueda] = useState("");
     const [selected, setSelected] = useState<Complejo | null>(null);
+    const [geoPosition, setGeoPosition] = useState<{
+        lat: number;
+        lng: number;
+    } | null>(null);
 
     const router = useRouter();
+
+    async function geocodeDireccion(direccion: string): Promise<{
+        lat: number;
+        lng: number;
+    } | null> {
+        if (geocodeCache.has(direccion)) {
+            return geocodeCache.get(direccion)!;
+        }
+
+        const apiKey = "AIzaSyC717n1-JDtnYNbRu18MYpKnVxy3Zqw6Q8";
+        const response = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+                direccion
+            )}&key=${apiKey}`
+        );
+        const data = await response.json();
+
+        if (data.status === "OK") {
+            const location = data.results[0].geometry.location;
+            geocodeCache.set(direccion, location); // almacena en caché
+            return location;
+        } else {
+            console.warn("Geocoding falló:", data.status);
+            return null;
+        }
+    }
+
+    useEffect(() => {
+        if (selected) {
+            const direccionCompleta = `${selected.direccion}, ${selected.ciudad}`;
+            geocodeDireccion(direccionCompleta).then((pos) => {
+                if (pos) setGeoPosition(pos);
+            });
+        } else {
+            setGeoPosition(null);
+        }
+    }, [selected]);
 
     useEffect(() => {
         fetch("api/complexes")
@@ -70,7 +113,7 @@ export default function ComplejosPage() {
                             Lista de Complejos
                         </h2>
                         <ul className="space-y-3">
-                            {filtered.map((c) => (
+                            {filtered?.map((c) => (
                                 <li
                                     key={c.id_complejo}
                                     onClick={() => setSelected(c)}
@@ -82,8 +125,9 @@ export default function ComplejosPage() {
                                         </p>
                                         <p className="text-sm text-gray-400 flex gap-2 items-center">
                                             <MapPin className="w-4 h-4" />
-                                            {c.direccion}
+                                            {c.direccion} - {c.ciudad}
                                         </p>
+
                                         <p className="text-sm text-gray-400 flex gap-2 items-center">
                                             <Phone className="w-4 h-4" />{" "}
                                             {c.telefono}
@@ -109,34 +153,24 @@ export default function ComplejosPage() {
                         <h2 className="text-xl font-semibold mb-3">Mapa</h2>
                         <APIProvider apiKey="AIzaSyC717n1-JDtnYNbRu18MYpKnVxy3Zqw6Q8">
                             <div className="h-[500px] w-full rounded-xl overflow-hidden border border-gray-700">
-                                <Map
+                                <GoogleMap
                                     center={
-                                        selected
-                                            ? {
-                                                  lat: selected.latitud,
-                                                  lng: selected.longitud,
-                                              }
-                                            : { lat: -27.46, lng: -58.98 }
+                                        geoPosition ?? {
+                                            lat: -27.46,
+                                            lng: -58.98,
+                                        }
                                     }
                                     zoom={13}
                                     className="w-full h-full"
                                 >
-                                    {filtered.map((c) => (
-                                        <AdvancedMarker
-                                            key={c.id_complejo}
-                                            position={{
-                                                lat: c.latitud,
-                                                lng: c.longitud,
-                                            }}
-                                            onClick={() => setSelected(c)}
-                                        />
-                                    ))}
                                     {selected && (
                                         <InfoWindow
-                                            position={{
-                                                lat: selected.latitud,
-                                                lng: selected.longitud,
-                                            }}
+                                            position={
+                                                geoPosition ?? {
+                                                    lat: -27.46,
+                                                    lng: -58.98,
+                                                }
+                                            }
                                             onCloseClick={() =>
                                                 setSelected(null)
                                             }
@@ -147,13 +181,30 @@ export default function ComplejosPage() {
                                                 </div>
                                             }
                                         >
-                                            <div className="!overflow-hidden text-black">
-                                                <p>{selected.direccion}</p>
-                                                <p>{selected.telefono}</p>
+                                            <div className="!overflow-hidden h-full py-4 font-sm font-medium text-slate-700 flex flex-col gap-2 justify-between">
+                                                <p className="text-sm text-gray-700 flex gap-2 items-center">
+                                                    <MapPin className="w-4 h-4" />
+                                                    {selected.direccion}
+                                                </p>
+                                                <p className="text-sm text-gray-700 flex gap-1 items-center">
+                                                    <Phone className="w-4 h-4" />{" "}
+                                                    {selected.telefono}
+                                                </p>
+                                                <button
+                                                    onClick={() =>
+                                                        router.push(
+                                                            `/complex/${selected.id_complejo}`
+                                                        )
+                                                    }
+                                                    className="flex gap-1 bg-gradient-to-r from-custom-dark-green to-custom-green w-full h-fit items-center justify-center rounded shadow px-3 py-1 text-white font-medium text-sm cursor-pointer hover:from-emerald-700 hover:to-emerald-600"
+                                                >
+                                                    <ListCheck className="w-4 h-4" />
+                                                    Reservar{" "}
+                                                </button>
                                             </div>
                                         </InfoWindow>
                                     )}
-                                </Map>
+                                </GoogleMap>
                             </div>
                         </APIProvider>
                     </div>

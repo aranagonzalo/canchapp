@@ -26,6 +26,7 @@ import { DayPicker } from "react-day-picker";
 import { useUser } from "@/context/userContext";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useNotifications } from "@/hooks";
 
 // Tipado
 
@@ -44,6 +45,23 @@ type AdminField =
     | "adminPassword"
     | "adminPassword2"
     | "adminCelular";
+
+const diasSemana = [
+    { nombre: "Lunes", index: 1 },
+    { nombre: "Martes", index: 2 },
+    { nombre: "Miércoles", index: 3 },
+    { nombre: "Jueves", index: 4 },
+    { nombre: "Viernes", index: 5 },
+    { nombre: "Sábado", index: 6 },
+    { nombre: "Domingo", index: 0 },
+];
+
+const customLabels: Partial<Record<AdminField, string>> = {
+    adminEmail: "Correo electrónico",
+    adminEmail2: "Repetir correo electrónico",
+    adminPassword: "Contraseña",
+    adminPassword2: "Repetir contraseña",
+};
 
 type AdminFormState = Record<AdminField, string>;
 
@@ -89,10 +107,23 @@ const initialAdminData: AdminFormState = {
 };
 
 export default function RegisterPage() {
+    const { notificar } = useNotifications();
+
     const [jugador, setJugador] = useState<JugadorState>(initialJugadorData);
     const [admin, setAdmin] = useState<AdminFormState>(initialAdminData);
     const [errors, setErrors] = useState<Record<string, boolean>>({});
     const [loading, setLoading] = useState(false);
+    const [horarios, setHorarios] = useState<
+        { dia: number; apertura: string; cierre: string; activo: boolean }[]
+    >([
+        { dia: 1, apertura: "08:00", cierre: "22:00", activo: true },
+        { dia: 2, apertura: "08:00", cierre: "22:00", activo: true },
+        { dia: 3, apertura: "08:00", cierre: "22:00", activo: true },
+        { dia: 4, apertura: "08:00", cierre: "22:00", activo: true },
+        { dia: 5, apertura: "08:00", cierre: "22:00", activo: true },
+        { dia: 6, apertura: "09:00", cierre: "20:00", activo: false },
+        { dia: 0, apertura: "09:00", cierre: "20:00", activo: false },
+    ]);
 
     const router = useRouter();
     const { login } = useUser();
@@ -119,21 +150,45 @@ export default function RegisterPage() {
 
         try {
             // Paso 1: Registro
-            const response = await fetch(`api/auth/register`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    ...data,
-                    mail: type === "jugador" ? jugador.email : admin.adminEmail,
-                    contrasena:
+            const response = await fetch(
+                `api/auth/${
+                    type === "jugador" ? "register" : "register-admin"
+                }`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(
                         type === "jugador"
-                            ? jugador.password
-                            : admin.adminPassword,
-                    tipo: type, // requerido para el backend
-                }),
-            });
+                            ? {
+                                  ...jugador,
+                                  mail: jugador.email,
+                                  contrasena: jugador.password,
+                                  tipo: "jugador",
+                              }
+                            : {
+                                  complejo: {
+                                      nombreComplejo: admin.complejo,
+                                      cuit: admin.cuit,
+                                      ciudad: admin.ciudad,
+                                      direccion: `${admin.calle} ${admin.altura}`,
+                                      telefonoComplejo: admin.telefono,
+                                      horarios: horarios.filter(
+                                          (h) => h.activo
+                                      ),
+                                  },
+                                  administrador: {
+                                      nombre: admin.adminNombre,
+                                      apellido: admin.adminApellido,
+                                      mail: admin.adminEmail,
+                                      contrasena: admin.adminPassword,
+                                      telefono: admin.adminCelular,
+                                  },
+                              }
+                    ),
+                }
+            );
 
             const resData = await response.json();
 
@@ -172,8 +227,17 @@ export default function RegisterPage() {
             }
 
             toast.success("Inicio de sesión exitoso");
+            await notificar({
+                titulo: "Bienvenido/a a CanchaApp",
+                mensaje:
+                    "Tu cuenta ha sido creada con éxito. ¡Ya puedes explorar y disfrutar del mundo del fútbol con nosotros!",
+            });
             login(loginData); // guarda en contexto
-            router.push("/home");
+            if (type === "jugador") {
+                router.push("/home");
+            } else {
+                router.push("/admin/home");
+            }
 
             type === "jugador"
                 ? setJugador({
@@ -557,7 +621,97 @@ export default function RegisterPage() {
                                 })}
                             </div>
 
-                            <h3 className="text-white text-lg font-semibold mb-2">
+                            <h3 className="text-white text-lg font-semibold mt-6 mb-2">
+                                Horarios de Atención
+                            </h3>
+                            <div className="grid gap-4">
+                                {diasSemana.map(({ nombre, index }) => {
+                                    const horario = horarios.find(
+                                        (h) => h.dia === index
+                                    );
+                                    if (!horario) return null;
+                                    return (
+                                        <div
+                                            key={index}
+                                            className="flex items-center gap-4"
+                                        >
+                                            <Label className="w-24 text-white">
+                                                {nombre}
+                                            </Label>
+                                            <input
+                                                type="checkbox"
+                                                checked={horario.activo}
+                                                onChange={() =>
+                                                    setHorarios((prev) =>
+                                                        prev.map((h) =>
+                                                            h.dia === index
+                                                                ? {
+                                                                      ...h,
+                                                                      activo: !h.activo,
+                                                                  }
+                                                                : h
+                                                        )
+                                                    )
+                                                }
+                                            />
+                                            {horario.activo && (
+                                                <div className="flex gap-2 items-center">
+                                                    <input
+                                                        type="time"
+                                                        value={horario.apertura}
+                                                        onChange={(e) =>
+                                                            setHorarios(
+                                                                (prev) =>
+                                                                    prev.map(
+                                                                        (h) =>
+                                                                            h.dia ===
+                                                                            index
+                                                                                ? {
+                                                                                      ...h,
+                                                                                      apertura:
+                                                                                          e
+                                                                                              .target
+                                                                                              .value,
+                                                                                  }
+                                                                                : h
+                                                                    )
+                                                            )
+                                                        }
+                                                        className="input !py-1 text-sm rounded-lg"
+                                                    />
+                                                    <span className="text-white">
+                                                        a
+                                                    </span>
+                                                    <input
+                                                        type="time"
+                                                        value={horario.cierre}
+                                                        onChange={(e) =>
+                                                            setHorarios(
+                                                                (prev) =>
+                                                                    prev.map(
+                                                                        (h) =>
+                                                                            h.dia ===
+                                                                            index
+                                                                                ? {
+                                                                                      ...h,
+                                                                                      cierre: e
+                                                                                          .target
+                                                                                          .value,
+                                                                                  }
+                                                                                : h
+                                                                    )
+                                                            )
+                                                        }
+                                                        className="input !py-1 text-sm rounded-lg"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            <h3 className="text-white text-lg font-semibold mt-8 mb-2">
                                 Datos del Administrador
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -572,10 +726,12 @@ export default function RegisterPage() {
                                         "adminCelular",
                                     ] as AdminField[]
                                 ).map((field) => {
-                                    const label = field
-                                        .replace("admin", "")
-                                        .replace(/([A-Z])/g, " $1")
-                                        .trim();
+                                    const label =
+                                        customLabels[field] ||
+                                        field
+                                            .replace("admin", "")
+                                            .replace(/([A-Z])/g, " $1")
+                                            .trim();
                                     const placeholders: Record<
                                         AdminField,
                                         string

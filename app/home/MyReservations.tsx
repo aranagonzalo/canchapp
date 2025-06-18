@@ -33,7 +33,6 @@ export default function MisReservas() {
 
     const [reservas, setReservas] = useState<Reserva[]>([]);
     const [loading, setLoading] = useState(true);
-    const [estadoFiltro, setEstadoFiltro] = useState("todas");
 
     const [showModal, setShowModal] = useState(false);
     const [reservaActiva, setReservaActiva] = useState(null);
@@ -64,20 +63,14 @@ export default function MisReservas() {
         }
     };
 
-    const handleContinuar = (reserva: any) => {
-        setReservaActiva(reserva);
-        setShowModal(true);
-    };
-
     const columnas = [
         "Complejo",
         "Dirección",
         "Teléfono",
         "Cancha",
         "Fecha",
-        "Hora",
+        "Hora(s)",
         "Equipo",
-        "Estado",
         "Acciones",
     ];
 
@@ -88,30 +81,17 @@ export default function MisReservas() {
             <TableCell>{reserva.telefono_complejo}</TableCell>
             <TableCell>{reserva.nombre_cancha}</TableCell>
             <TableCell>{reserva.fecha}</TableCell>
-            <TableCell>{reserva.hora}</TableCell>
-            <TableCell>{reserva.nombre_equipo || "No asignado"}</TableCell>
-            <TableCell>{reserva.estado}</TableCell>
             <TableCell>
-                {reserva.estado === "pendiente" ? (
-                    <>
-                        <Button
-                            className="bg-blue-600 hover:bg-blue-700 text-white text-xs mr-2"
-                            onClick={() => handleContinuar(reserva)}
-                        >
-                            Continuar
-                        </Button>
-                        <Button
-                            className="bg-red-600 hover:bg-red-700 text-white text-xs"
-                            onClick={() =>
-                                eliminarReserva(reserva.fecha, reserva.hora)
-                            }
-                        >
-                            Eliminar
-                        </Button>
-                    </>
-                ) : (
-                    <span className="text-green-400 text-xs">Completada</span>
-                )}
+                {reserva.horas.map((h: string) => h + ":00, ")}
+            </TableCell>
+            <TableCell>{reserva.nombre_equipo || "No asignado"}</TableCell>
+            <TableCell>
+                <Button
+                    className="bg-red-600 hover:bg-red-700 text-white text-xs"
+                    onClick={() => eliminarReserva(reserva.fecha, reserva.hora)}
+                >
+                    Eliminar
+                </Button>
             </TableCell>
         </TableRow>
     );
@@ -120,14 +100,8 @@ export default function MisReservas() {
         if (id_jugador) fetchReservas();
     }, [id_jugador]);
 
-    const reservasFiltradas = reservas.filter((r) =>
-        estadoFiltro === "todas"
-            ? true
-            : r.estado?.toLowerCase() === estadoFiltro
-    );
-
     return (
-        <div className="p-6">
+        <div className="py-6">
             {showModal && (
                 <ReservationsModal
                     show={showModal}
@@ -137,27 +111,15 @@ export default function MisReservas() {
                 />
             )}
 
-            <Tabs
-                defaultValue="todas"
-                onValueChange={setEstadoFiltro}
-                className="mb-6"
-            >
-                <TabsList className="w-full flex justify-start bg-slate-900 border border-slate-800">
-                    <TabsTrigger value="todas">Todas</TabsTrigger>
-                    <TabsTrigger value="pendiente">Pendientes</TabsTrigger>
-                    <TabsTrigger value="confirmado">Confirmadas</TabsTrigger>
-                </TabsList>
-            </Tabs>
-
             <div className="bg-[#0b1120] p-4 rounded-lg border border-slate-800">
                 {loading ? (
                     <div className="text-white flex justify-center py-10">
                         <LoadingSpinner />
                         <span className="ml-2">Cargando...</span>
                     </div>
-                ) : reservasFiltradas.length === 0 ? (
+                ) : reservas.length === 0 ? (
                     <p className="text-gray-400">
-                        No hay reservas en esta categoría.
+                        No hay reservas disponibles.
                     </p>
                 ) : (
                     <Table>
@@ -171,7 +133,7 @@ export default function MisReservas() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {reservasFiltradas.map((r) => renderFila(r))}
+                            {reservas.map((r) => renderFila(r))}
                         </TableBody>
                     </Table>
                 )}

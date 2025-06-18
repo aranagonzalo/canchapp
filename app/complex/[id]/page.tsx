@@ -5,6 +5,9 @@ import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Star, MapPin, Phone, Users, Clock } from "lucide-react";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import { ReservaModal } from "./ReservaModal";
+import { Toaster } from "sonner";
 
 interface Complejo {
     id_complejo: number;
@@ -15,18 +18,33 @@ interface Complejo {
     descripcion: string | null;
 }
 
+interface Cancha {
+    id_cancha: number;
+    nombre_cancha: string;
+    cant_jugador: number;
+    techo: boolean;
+    horarios_disponibles: string[];
+    precio_turno: number;
+    imagen?: string;
+}
+
 export default function ComplejoDetallePage() {
     const { id } = useParams();
     const router = useRouter();
     const [complejo, setComplejo] = useState<Complejo | null>(null);
     const [loading, setLoading] = useState(true);
+    const [canchas, setCanchas] = useState<Cancha[]>([]);
+    const [selectedCanchaId, setSelectedCanchaId] = useState<number | null>(
+        null
+    );
 
     useEffect(() => {
-        fetch(`http://localhost:3001/complejo/${id}`)
+        fetch(`/api/complexes/${id}`)
             .then((res) => res.json())
             .then((data) => {
                 if (data.Status === "Respuesta ok") {
                     setComplejo(data.complejo);
+                    setCanchas(data.canchas); // ✅ ahora también seteamos las canchas
                 } else {
                     setComplejo(null);
                 }
@@ -38,15 +56,20 @@ export default function ComplejoDetallePage() {
             });
     }, [id]);
 
-    if (loading) return <div className="text-white p-10">Cargando...</div>;
+    if (loading)
+        return (
+            <div className="min-h-screen bg-gradient-to-b from-[#0b1120] to-[#030712] text-white flex flex-col gap-2 items-center justify-center">
+                <LoadingSpinner /> Cargando...
+            </div>
+        );
 
     if (!complejo) {
         return (
-            <div className="min-h-screen bg-[#0b1120] text-white flex flex-col items-center justify-center">
+            <div className="min-h-screen bg-gradient-to-b from-[#0b1120] to-[#030712] text-white flex flex-col items-center justify-center">
                 <p className="text-xl mb-4">
                     No se encontró el complejo solicitado.
                 </p>
-                <Button onClick={() => router.push("/complejos")}>
+                <Button onClick={() => router.push("/complexes")}>
                     Volver al mapa
                 </Button>
             </div>
@@ -55,6 +78,7 @@ export default function ComplejoDetallePage() {
 
     return (
         <div className="bg-gradient-to-b from-[#0b1120] to-[#030712] min-h-screen pb-20  text-white">
+            <Toaster richColors position="top-right" />
             {/* Banner */}
             <div
                 className="relative h-64 md:h-96 w-full bg-cover bg-center bg-no-repeat"
@@ -71,14 +95,11 @@ export default function ComplejoDetallePage() {
                             <MapPin className="w-4 h-4 mr-1" />
                             {complejo.ciudad}, {complejo.direccion}
                             <Star className="ml-4 w-4 h-4 text-yellow-400 fill-yellow-400" />
-                            <span className="ml-1">4.8 (124 reseñas)</span>
+                            <span className="ml-1">4.8 (8 reseñas)</span>
                         </p>
                     </div>
                     <div className="ml-auto flex gap-2">
-                        <Button variant="secondary">Guardar</Button>
-                        <Button className="bg-green-600 hover:bg-green-500">
-                            Reservar Ahora
-                        </Button>
+                        {/* <Button variant="secondary">Guardar</Button> */}
                     </div>
                 </div>
             </div>
@@ -113,57 +134,96 @@ export default function ComplejoDetallePage() {
                     <h2 className="text-xl font-bold mb-4">
                         Canchas disponibles
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {[1, 2, 3, 4].map((i) => (
-                            <div
-                                key={i}
-                                className="bg-[#1a1f2b] p-4 rounded-xl border border-gray-700"
-                            >
+
+                    {canchas.length === 0 ? (
+                        <p className="text-sm text-gray-400">
+                            Este complejo aún no tiene canchas registradas.
+                        </p>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {canchas.map((cancha, i) => (
                                 <div
-                                    className="h-28 bg-gray-700 rounded mb-3 bg-center bg-cover"
-                                    style={{
-                                        backgroundImage: `url('/images/canchas/cancha${i}.jpeg')`,
-                                    }}
-                                ></div>
-                                <div className="flex justify-between items-start mb-2">
-                                    <p className="font-semibold">Cancha {i}</p>
-                                    <span className="text-sm text-green-400 bg-[#033] px-2 py-0.5 rounded-full">
-                                        Fútbol 5
-                                    </span>
-                                </div>
-                                <p className="text-sm text-gray-400 mb-1 flex items-center gap-1">
-                                    <Users className="w-4 h-4" /> Capacidad: 10
-                                    jugadores
-                                </p>
-                                <p className="text-sm text-gray-400 mb-1 flex items-center gap-1">
-                                    <Clock className="w-4 h-4" /> Disponible:
-                                    8:00 - 23:00
-                                </p>
-                                <p className="text-sm text-green-400">
-                                    Disponible hoy
-                                </p>
-                                <div className="text-right mt-2">
-                                    <p className="text-green-400 font-bold mb-1">
-                                        $5000/h
+                                    key={cancha.id_cancha}
+                                    className="bg-[#1a1f2b] p-4 rounded-xl border border-gray-700"
+                                >
+                                    <div
+                                        className="h-28 bg-gray-700 rounded mb-3 bg-center bg-cover"
+                                        style={{
+                                            backgroundImage: `url('${
+                                                cancha.imagen ||
+                                                `/images/canchas/cancha${
+                                                    i + 1
+                                                }.jpeg`
+                                            }')`,
+                                        }}
+                                    ></div>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <p className="font-semibold">
+                                            {cancha.nombre_cancha}
+                                        </p>
+                                        {cancha.techo && (
+                                            <span className="text-sm text-green-400 bg-[#033] px-2 py-0.5 rounded-full">
+                                                Techada
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-sm text-gray-400 mb-1 flex items-center gap-1">
+                                        <Users className="w-4 h-4" /> Capacidad:{" "}
+                                        {cancha.cant_jugador} jugadores
                                     </p>
-                                    <Button className="w-full bg-gradient-to-r from-custom-dark-green to-custom-green cursor-pointer hover:from-emerald-700 hover:to-emerald-600">
-                                        Reservar
-                                    </Button>
+                                    {/* <p className="text-sm text-gray-400 mb-1 flex items-center gap-1">
+                                        <Clock className="w-4 h-4" />{" "}
+                                        Disponible: {cancha.horario_apertura} -{" "}
+                                        {cancha.horario_cierre}
+                                    </p> */}
+                                    {/* {cancha.horarios_disponibles.length > 0 && (
+                                        <p className="text-sm text-green-400">
+                                            Disponible hoy
+                                        </p>
+                                    )} */}
+
+                                    <div className="text-right -mt-4">
+                                        <p className="text-green-400 font-bold mb-1">
+                                            ${cancha.precio_turno}/h
+                                        </p>
+
+                                        <Button
+                                            onClick={() =>
+                                                setSelectedCanchaId(
+                                                    cancha.id_cancha
+                                                )
+                                            }
+                                            className="mt-3 cursor-pointer w-full bg-gradient-to-r from-custom-dark-green to-custom-green hover:from-emerald-700 hover:to-emerald-600"
+                                        >
+                                            Reservar
+                                        </Button>
+                                        {selectedCanchaId && (
+                                            <ReservaModal
+                                                idComplejo={
+                                                    complejo?.id_complejo
+                                                }
+                                                idCancha={selectedCanchaId}
+                                                onClose={() =>
+                                                    setSelectedCanchaId(null)
+                                                }
+                                            />
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </TabsContent>
 
                 <TabsContent value="info">
                     <h2 className="text-xl font-bold mb-4">
                         Información del Complejo
                     </h2>
-                    <p className="text-sm text-gray-300 mb-2">
+                    <p className="text-sm text-gray-400 mb-2">
                         <Phone className="inline w-4 h-4 mr-1" />{" "}
                         {complejo.telefono}
                     </p>
-                    <p className="text-sm text-gray-300">
+                    <p className="text-sm text-gray-400">
                         {complejo.descripcion ||
                             "Este complejo aún no tiene descripción."}
                     </p>

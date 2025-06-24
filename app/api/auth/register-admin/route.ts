@@ -50,7 +50,7 @@ export async function POST(req: Request) {
             horarios,
         } = complejo;
 
-        const { nombre, apellido, mail, contrasena, telefono } = administrador;
+        const { nombre, apellido, mail, contrasena } = administrador;
 
         const errores: Record<string, string> = {};
 
@@ -77,15 +77,27 @@ export async function POST(req: Request) {
             );
         }
 
-        if (
-            !isValidString(nombre) ||
-            !isValidString(apellido) ||
-            !isValidEmail(mail) ||
-            !isValidPass(contrasena) ||
-            !isValidPhone(telefono)
-        ) {
+        if (!isValidString(nombre)) {
+            errores.nombre = "Nombre no válido";
+        }
+        if (!isValidString(apellido)) {
+            errores.apellido = "Apellido no válido";
+        }
+        if (!isValidEmail(mail)) {
+            errores.mail = "Correo electrónico no válido";
+        }
+        if (!isValidPass(contrasena)) {
+            errores.contrasena =
+                "Contraseña debe tener entre 8 y 20 caracteres, una mayúscula, una minúscula y un número";
+        }
+
+        // Si hay cualquier error, lo retornamos todos juntos
+        if (Object.keys(errores).length > 0) {
             return NextResponse.json(
-                { message: "Datos del administrador no válidos" },
+                {
+                    message: "Errores de validación",
+                    errores,
+                },
                 { status: 400 }
             );
         }
@@ -110,7 +122,6 @@ export async function POST(req: Request) {
                 {
                     nombre,
                     apellido,
-                    telefono,
                     mail,
                     contrasena: hash,
                 },

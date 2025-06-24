@@ -32,10 +32,10 @@ export default function NotificacionesIcon() {
                 align="end"
                 className="w-[400px] p-0 bg-[#1a1f2b] border border-gray-800 text-white"
             >
-                <div className="px-4 py-2 font-semibold border-b border-gray-700">
+                <div className="px-4 py-3 font-semibold border-b border-gray-800">
                     Notificaciones
                 </div>
-                <ul className="max-h-64 overflow-y-auto text-sm divide-y divide-gray-700">
+                <ul className="max-h-64 overflow-y-auto text-sm divide-y divide-gray-800 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
                     {notificaciones.length === 0 ? (
                         <li className="px-4 py-2 text-gray-400 text-sm">
                             No hay notificaciones

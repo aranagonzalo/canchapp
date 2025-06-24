@@ -41,7 +41,9 @@ export async function GET(req: NextRequest) {
         // 3. Obtener información de complejo y cancha
         const { data: complejoData } = await db
             .from("complejo")
-            .select("id_complejo, nombre_complejo, direccion, telefono")
+            .select(
+                "id_admin, id_complejo, nombre_complejo, direccion, telefono"
+            )
             .in("id_complejo", id_complejos);
 
         const { data: canchaData } = await db
@@ -62,14 +64,17 @@ export async function GET(req: NextRequest) {
             );
 
             return {
+                id: res.id,
                 fecha: res.fecha,
                 horas: res.horas, // array de strings: ["08", "09"]
                 estado: res.estado, // string o boolean
                 nombre_equipo: equipo?.nombre_equipo || "Sin equipo",
+                id_admin: complejo?.id_admin,
                 nombre_complejo: complejo?.nombre_complejo || "",
                 direccion_complejo: complejo?.direccion || "",
                 telefono_complejo: complejo?.telefono || "",
                 nombre_cancha: cancha?.nombre_cancha || "",
+                is_active: res.is_active,
             };
         });
 

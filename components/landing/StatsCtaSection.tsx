@@ -1,11 +1,59 @@
 // src/components/sections/StatsCtaSection.tsx
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useUser } from "@/context/userContext";
+import { useEffect, useState } from "react";
+
+const formatCount = (num: number) => {
+    if (num >= 1000 && num < 10000) return `${(num / 1000).toFixed(1)}K+`;
+    if (num >= 10000) return `${Math.floor(num / 1000)}K+`;
+    return `${num}+`;
+};
+
+const StatItem = ({ value, label }: { value: string; label: string }) => (
+    <div>
+        <p className="text-4xl font-bold text-white">{value}</p>
+        <p className="text-sm text-gray-400">{label}</p>
+    </div>
+);
+
 export function StatsCtaSection() {
-    const stats = [
-        { value: "100+", label: "Complejos" },
-        { value: "500+", label: "Canchas" },
-        { value: "10K+", label: "Usuarios" },
-        { value: "50K+", label: "Reservas" },
-    ];
+    const router = useRouter();
+    const { user } = useUser();
+
+    const handleCtaClick = () => {
+        if (user) {
+            router.push("/home");
+        } else {
+            router.push("/login");
+        }
+    };
+
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState<{
+        complejos: number;
+        canchas: number;
+        usuarios: number;
+        reservas: number;
+    } | null>(null);
+
+    const fetchReservas = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/stats`);
+            const data = await res.json();
+            setStats(data);
+        } catch (err) {
+            console.log("Error al obtener reservas.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchReservas();
+    }, []);
 
     return (
         <section className="bg-gradient-to-br from-[#275d3e] to-[#262e3a] text-white py-20 px-4">
@@ -18,22 +66,33 @@ export function StatsCtaSection() {
                     CanchApp.
                 </p>
 
-                <button className="hover:scale-105 hover:cursor-pointer mb-12 bg-white text-[#275d3e] hover:bg-gray-100 font-semibold px-6 py-3 rounded-full text-sm transition">
+                <button
+                    onClick={handleCtaClick}
+                    className="hover:scale-105 hover:cursor-pointer mb-12 bg-white text-[#275d3e] hover:bg-gray-100 font-semibold px-6 py-3 rounded-full text-sm transition"
+                >
                     Comenzar Ahora
                 </button>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-                    {stats.map((stat, i) => (
-                        <div key={i}>
-                            <p className="text-4xl font-bold text-white">
-                                {stat.value}
-                            </p>
-                            <p className="text-sm text-gray-400">
-                                {stat.label}
-                            </p>
-                        </div>
-                    ))}
-                </div>
+                {stats && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+                        <StatItem
+                            label="Complejos"
+                            value={formatCount(stats.complejos)}
+                        />
+                        <StatItem
+                            label="Canchas"
+                            value={formatCount(stats.canchas)}
+                        />
+                        <StatItem
+                            label="Usuarios"
+                            value={formatCount(stats.usuarios)}
+                        />
+                        <StatItem
+                            label="Reservas"
+                            value={formatCount(stats.reservas)}
+                        />
+                    </div>
+                )}
             </div>
         </section>
     );

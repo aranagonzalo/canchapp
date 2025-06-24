@@ -1,9 +1,16 @@
 interface StarRatingProps {
     rating: number;
     totalReviews: number;
+    showTotal?: boolean;
+    totalTextColor?: string;
 }
 
-export function StarRating({ rating, totalReviews }: StarRatingProps) {
+export function StarRating({
+    rating,
+    totalReviews,
+    showTotal = false,
+    totalTextColor = "text-gray-400",
+}: StarRatingProps) {
     const totalStars = 5;
     const fullStars = Math.floor(rating);
     const partialFill = rating % 1;
@@ -34,10 +41,11 @@ export function StarRating({ rating, totalReviews }: StarRatingProps) {
                     ★
                 </span>
             ))}
-
-            <span className="text-gray-400 text-sm ml-1 font-normal">
-                ({totalReviews} reseñas)
-            </span>
+            {showTotal && (
+                <span className={`${totalTextColor} text-sm ml-1 font-normal`}>
+                    {rating?.toFixed(1)} ({totalReviews} reseñas)
+                </span>
+            )}
         </div>
     );
 }

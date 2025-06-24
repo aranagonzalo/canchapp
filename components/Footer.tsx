@@ -31,22 +31,22 @@ export default function Footer() {
                     </h4>
                     <ul className="space-y-2 text-sm">
                         <li>
-                            <a href="#complejos" className="hover:text-white">
+                            <a href="/#complejos" className="hover:text-white">
                                 Complejos
                             </a>
                         </li>
                         <li>
-                            <a href="#equipos" className="hover:text-white">
+                            <a href="/#equipos" className="hover:text-white">
                                 Equipos
                             </a>
                         </li>
                         <li>
-                            <a href="#funciona" className="hover:text-white">
+                            <a href="/#funciona" className="hover:text-white">
                                 Cómo Funciona
                             </a>
                         </li>
                         <li>
-                            <a href="#cta" className="hover:text-white">
+                            <a href="/#cta" className="hover:text-white">
                                 Comenzar
                             </a>
                         </li>

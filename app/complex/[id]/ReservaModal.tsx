@@ -1,5 +1,5 @@
 "use client";
-
+import { es } from "react-day-picker/locale";
 import {
     Dialog,
     DialogContent,
@@ -21,15 +21,26 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { useNotifications } from "@/hooks";
+import { formatHourRange } from "@/lib/utils";
 
 interface Props {
+    idAdmin: number;
     idComplejo: number;
     idCancha: number;
+    nombreCancha: string | null;
     onClose: () => void;
 }
 
-export function ReservaModal({ idComplejo, idCancha, onClose }: Props) {
+export function ReservaModal({
+    idAdmin,
+    idComplejo,
+    idCancha,
+    nombreCancha,
+    onClose,
+}: Props) {
     const { user } = useUser();
+    const { notificar } = useNotifications();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -110,8 +121,12 @@ export function ReservaModal({ idComplejo, idCancha, onClose }: Props) {
             !selectedDate ||
             !selectedEquipoId ||
             horasSeleccionadas.length === 0
-        )
+        ) {
+            toast.info(
+                "Debes seleccionar un día, horario y equipo para continuar."
+            );
             return;
+        }
 
         const res = await fetch("/api/reservations/create", {
             method: "POST",
@@ -128,6 +143,20 @@ export function ReservaModal({ idComplejo, idCancha, onClose }: Props) {
         const data = await res.json();
         if (res.ok) {
             toast.success("Reserva realizada correctamente");
+            try {
+                notificar({
+                    titulo: "Nueva reserva",
+                    mensaje: `${
+                        user?.nombre
+                    } ha hecho una nueva reserva en ${nombreCancha} el ${
+                        selectedDate.toISOString().split("T")[0]
+                    } a las ${formatHourRange(horasSeleccionadas)}`,
+                    url: "/admin/reservas",
+                    destinatarios: [{ id: idAdmin, tipo: "administrador" }],
+                });
+            } catch (err) {
+                console.log(err);
+            }
             onClose();
         } else {
             toast.error(data.message || "Error al reservar");
@@ -144,6 +173,7 @@ export function ReservaModal({ idComplejo, idCancha, onClose }: Props) {
                 <div className="grid grid-cols-1 md:grid-cols-2">
                     <div className="pr-4 border-r border-gray-200 flex justify-center">
                         <Calendar
+                            locale={es}
                             className="!p-0"
                             required
                             mode="single"
@@ -241,7 +271,7 @@ export function ReservaModal({ idComplejo, idCancha, onClose }: Props) {
                             selectedEquipoId === null
                         }
                         onClick={handleReserva}
-                        className="bg-gradient-to-r from-custom-dark-green to-custom-green hover:from-emerald-700 hover:to-emerald-600"
+                        className="cursor-pointer bg-gradient-to-r from-custom-dark-green to-custom-green hover:from-emerald-700 hover:to-emerald-600"
                     >
                         Reservar ahora
                     </Button>

@@ -33,24 +33,36 @@ export async function GET(req: NextRequest) {
     const { data: reservas, error: reservasError } = await db
         .from("reservas")
         .select(
-            "id, fecha, horas, estado, complejo(nombre_complejo, direccion), id_equipo"
+            "id, fecha, horas, is_active, complejo(nombre_complejo, direccion), id_equipo"
         )
         .in("id_equipo", idsEquipos);
 
     if (reservasError)
-        return NextResponse.json(
-            { error: "Error al cargar reservas" },
-            { status: 500 }
-        );
+        return NextResponse.json({ error: reservasError }, { status: 500 });
 
     const totalReservas = reservas.length;
     const reservasUltimos30 = reservas.filter(
         (r) => r.fecha >= fechaLimite
     ).length;
 
+    // Hora actual redondeada hacia la siguiente hora (por ejemplo, 17:32 -> 18)
+    const ahora = new Date();
+    const hoyISO = ahora.toISOString().split("T")[0];
+    const horaActual = ahora.getHours() + (ahora.getMinutes() > 0 ? 1 : 0);
+
+    // Próximas reservas
+    const reservasProximas = reservas.filter((r) => {
+        if (r.fecha > hoyISO) return true;
+        if (r.fecha === hoyISO) {
+            const primeraHora = parseInt(r.horas[0], 10);
+            return primeraHora >= horaActual;
+        }
+        return false;
+    });
+
     // 3. Complejos por número de reservas
     const { data: complejos, error: complejosError } = await db
-        .rpc("complejos_mas_reservados") // RPC o vista que ordene por count(*) y nombre
+        .rpc("complejos_recomendados") // RPC o vista que ordene por count(*) y nombre
         .limit(4);
 
     if (complejosError)
@@ -61,7 +73,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
         reservas: {
-            listado: reservas,
+            listado: reservasProximas,
             total: totalReservas,
             ultimos_30_dias: reservasUltimos30,
         },

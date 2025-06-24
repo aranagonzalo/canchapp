@@ -8,6 +8,8 @@ import {
 import { ListCheck, MapPin, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { formatPhoneForWhatsApp } from "@/lib/utils";
 
 interface Complejo {
     id_complejo: number;
@@ -99,12 +101,12 @@ export default function ComplejosPage() {
                     Filtra y visualiza los complejos disponibles
                 </p>
 
-                <input
+                <Input
                     type="text"
                     placeholder="Buscar por nombre..."
                     value={busqueda}
                     onChange={(e) => setBusqueda(e.target.value)}
-                    className="w-full max-w-md px-4 py-2 rounded bg-[#1a1f2b] text-white border border-gray-600 focus:outline-none mb-6"
+                    className="w-full max-w-md px-4 py-2 rounded-md bg-[#1a1f2b] text-white border border-gray-800 focus:outline-none mb-6"
                 />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -112,12 +114,12 @@ export default function ComplejosPage() {
                         <h2 className="text-xl font-semibold mb-3">
                             Lista de Complejos
                         </h2>
-                        <ul className="space-y-3">
+                        <ul className="space-y-3 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
                             {filtered?.map((c) => (
                                 <li
                                     key={c.id_complejo}
                                     onClick={() => setSelected(c)}
-                                    className="bg-[#1a1f2b] flex p-4 rounded-md cursor-pointer border shadow border-gray-800 hover:bg-[#2b3347] justify-between"
+                                    className="bg-[#1a1f2b] flex p-4 rounded-md cursor-pointer border shadow border-gray-800 hover:border-custom-dark-green/30 transition-all hover:bg-gradient-to-br hover:from-[#1a1f2b] hover:via-[#1a1f2b] hover:to-custom-dark-green/20 justify-between"
                                 >
                                     <div className="flex flex-col gap-1">
                                         <p className="font-bold">
@@ -127,11 +129,36 @@ export default function ComplejosPage() {
                                             <MapPin className="w-4 h-4" />
                                             {c.direccion} - {c.ciudad}
                                         </p>
-
-                                        <p className="text-sm text-gray-400 flex gap-2 items-center">
-                                            <Phone className="w-4 h-4" />{" "}
-                                            {c.telefono}
-                                        </p>
+                                        <div className="flex flex-col gap-2 md:flex-row">
+                                            <a
+                                                href={`https://wa.me/${formatPhoneForWhatsApp(
+                                                    c.telefono
+                                                )}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="mt-2 w-fit font-medium flex gap-2 bg-[#1b8d4a] hover:bg-[#007933] justify-center items-center text-white px-2.5 py-2 rounded-md text-xs transition"
+                                            >
+                                                <img
+                                                    src="/whatsapp.png"
+                                                    className="w-5 h-5"
+                                                />{" "}
+                                                WhatsApp
+                                            </a>
+                                            <a
+                                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                                                    `${c.direccion} - ${c.ciudad}`
+                                                )}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="mt-2 w-fit font-medium flex gap-2 bg-white hover:bg-gray-300 justify-center items-center text-black px-2.5 py-2 rounded-md text-xs transition"
+                                            >
+                                                <img
+                                                    src="/maps.png"
+                                                    className="w-5 h-5"
+                                                />{" "}
+                                                Maps
+                                            </a>
+                                        </div>
                                     </div>
                                     <button
                                         onClick={() =>

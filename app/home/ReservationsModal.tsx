@@ -5,208 +5,143 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogDescription,
     DialogFooter,
-    DialogClose,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { useState, useEffect } from "react";
+import { formatDistanceToNow, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
 import { toast } from "sonner";
-import Image from "next/image";
-
-interface Equipo {
-    id_equipo: number;
-    nombre_equipo: string;
-}
-
-export interface ReservaData {
-    nombre_complejo: string;
-    direccion_complejo: string;
-    telefono_complejo: string;
-    nombre_cancha: string;
-    fecha: string;
-    hora: string;
-    id_agenda: number;
-}
+import { useState } from "react";
+import { useNotifications } from "@/hooks";
+import { useUser } from "@/context/userContext";
+import { formatHourRange } from "@/lib/utils";
 
 interface Props {
     show: boolean;
     onHide: () => void;
-    nuevaReserva: ReservaData;
-    origen: "reservas" | "complejo";
+    nuevaReserva: Reserva;
+    onCancel: () => void;
 }
 
-export default function ReservationsModal({
+interface Reserva {
+    nombre_complejo: string;
+    direccion_complejo: string;
+    telefono_complejo: string;
+    nombre_cancha: string;
+    id_admin: number;
+    fecha: string;
+    horas: string[];
+    nombre_equipo?: string;
+    id: number;
+    is_active: boolean;
+}
+
+export default function ReservationModal({
     show,
     onHide,
     nuevaReserva,
-    origen,
+    onCancel,
 }: Props) {
-    const [equipos, setEquipos] = useState<Equipo[]>([]);
-    const [selectedEquipo, setSelectedEquipo] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const { notificar } = useNotifications();
+    const { user } = useUser();
 
-    const fetchEquipos = async () => {
+    const cancelarReserva = async () => {
+        setLoading(true);
         try {
-            const res = await fetch(
-                `/api/teams/my_teams?id=${nuevaReserva?.id_agenda}`
-            );
-            const data = await res.json();
-            setEquipos(data);
-        } catch (err) {
-            toast.error("No se pudieron cargar tus equipos.");
-        }
-    };
-
-    useEffect(() => {
-        if (show) {
-            fetchEquipos();
-            setSelectedEquipo(null);
-        }
-    }, [show]);
-
-    const handleReservar = async () => {
-        if (!selectedEquipo) {
-            toast.warning("Selecciona un equipo para continuar.");
-            return;
-        }
-
-        try {
-            setLoading(true);
-            const res = await fetch("/api/reservar", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    id_agenda: nuevaReserva.id_agenda,
-                    id_equipo: parseInt(selectedEquipo),
-                }),
+            const res = await fetch(`/api/reservations/delete`, {
+                method: "DELETE",
+                body: JSON.stringify({ id: nuevaReserva.id }),
             });
 
-            if (!res.ok) throw new Error();
-
-            toast.success("Reserva confirmada correctamente.");
+            if (!res.ok) throw new Error("Falló la cancelación");
+            // notificar al administrador
+            try {
+                notificar({
+                    titulo: "Reserva cancelada",
+                    mensaje: `${user?.nombre} ha cancelado una reserva en ${
+                        nuevaReserva?.nombre_cancha
+                    } el ${nuevaReserva?.fecha} a las ${formatHourRange(
+                        nuevaReserva?.horas!
+                    )}`,
+                    url: "/admin/reservas",
+                    destinatarios: [
+                        { id: nuevaReserva.id_admin, tipo: "administrador" },
+                    ],
+                });
+            } catch (err) {
+                console.log(err);
+            }
+            toast.success("Reserva cancelada");
+            onCancel();
             onHide();
         } catch (err) {
-            toast.error("Hubo un error al realizar la reserva.");
+            toast.error("No se pudo cancelar la reserva.");
         } finally {
             setLoading(false);
         }
     };
 
-    const handleCrearEquipo = () => {
-        toast.info("Serás redirigido para crear tu equipo.");
-        window.location.href = "/misEquipos";
-    };
+    if (!nuevaReserva) return null;
 
     return (
         <Dialog open={show} onOpenChange={onHide}>
-            <DialogContent className="bg-[#0b1120] text-white border border-slate-800 max-w-3xl">
+            <DialogContent className="bg-[#1a1f2b] border border-slate-700 text-white">
                 <DialogHeader>
-                    <DialogTitle className="text-white">
-                        Finaliza tu reserva
-                    </DialogTitle>
-                    <DialogDescription className="text-gray-400">
-                        Completa la información para confirmar tu reserva.
-                    </DialogDescription>
+                    <DialogTitle>Detalles de la Reserva</DialogTitle>
                 </DialogHeader>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
-                    <div className="flex justify-center">
-                        <Image
-                            src="/images/reserva/reserva.jpg"
-                            alt="Imagen de reserva"
-                            width={300}
-                            height={200}
-                            className="rounded-lg"
-                        />
-                    </div>
-
-                    <div className="space-y-2 text-sm">
-                        <p>
-                            <strong>Complejo:</strong>{" "}
-                            {nuevaReserva.nombre_complejo}
-                        </p>
-                        <p>
-                            <strong>Dirección:</strong>{" "}
-                            {nuevaReserva.direccion_complejo}
-                        </p>
-                        <p>
-                            <strong>Teléfono:</strong>{" "}
-                            {nuevaReserva.telefono_complejo}
-                        </p>
-                        <p>
-                            <strong>Cancha:</strong>{" "}
-                            {nuevaReserva.nombre_cancha}
-                        </p>
-                        <p>
-                            <strong>Fecha:</strong> {nuevaReserva.fecha}
-                        </p>
-                        <p>
-                            <strong>Hora:</strong> {nuevaReserva.hora}
-                        </p>
-
-                        {equipos.length > 0 ? (
-                            <div className="pt-2">
-                                <Label className="mb-1 block text-white">
-                                    Selecciona tu equipo
-                                </Label>
-                                <Select
-                                    onValueChange={(value) =>
-                                        setSelectedEquipo(value)
-                                    }
-                                >
-                                    <SelectTrigger className="bg-slate-800 text-white">
-                                        <SelectValue placeholder="Elige un equipo" />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-slate-900 text-white">
-                                        {equipos.map((e) => (
-                                            <SelectItem
-                                                key={e.id_equipo}
-                                                value={e.id_equipo.toString()}
-                                            >
-                                                {e.nombre_equipo}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        ) : (
-                            <div className="pt-4">
-                                <p className="text-gray-400">
-                                    No tienes equipos creados.{" "}
-                                    <button
-                                        onClick={handleCrearEquipo}
-                                        className="text-emerald-400 underline font-semibold"
-                                    >
-                                        Crear equipo
-                                    </button>
-                                </p>
-                            </div>
-                        )}
-                    </div>
+                <div className="space-y-2 text-sm">
+                    <p>
+                        <strong>Complejo:</strong>{" "}
+                        {nuevaReserva.nombre_complejo}
+                    </p>
+                    <p>
+                        <strong>Cancha:</strong> {nuevaReserva.nombre_cancha}
+                    </p>
+                    <p>
+                        <strong>Dirección:</strong>{" "}
+                        {nuevaReserva.direccion_complejo}
+                    </p>
+                    <p>
+                        <strong>Teléfono:</strong>{" "}
+                        {nuevaReserva.telefono_complejo}
+                    </p>
+                    <p>
+                        <strong>Fecha:</strong>{" "}
+                        {formatDistanceToNow(parseISO(nuevaReserva.fecha), {
+                            addSuffix: true,
+                            locale: es,
+                        })}
+                    </p>
+                    <p>
+                        <strong>Horas:</strong>{" "}
+                        {nuevaReserva.horas.map((h: string, i: number) => {
+                            const start = h.padStart(2, "0") + ":00";
+                            const end =
+                                (parseInt(h) + 1).toString().padStart(2, "0") +
+                                ":00";
+                            return `${start} - ${end}${
+                                i < nuevaReserva.horas.length - 1 ? ", " : ""
+                            }`;
+                        })}
+                    </p>
+                    <p>
+                        <strong>Equipo:</strong>{" "}
+                        {nuevaReserva.nombre_equipo || "No asignado"}
+                    </p>
                 </div>
 
-                <DialogFooter className="pt-2 flex justify-end gap-3">
-                    {equipos.length > 0 && (
+                <DialogFooter className="mt-4">
+                    {!nuevaReserva.is_active ? null : (
                         <Button
-                            onClick={handleReservar}
-                            className="bg-gradient-to-r from-emerald-600 to-emerald-400 text-white"
+                            onClick={cancelarReserva}
+                            className="bg-red-600 hover:bg-red-700 text-white"
                             disabled={loading}
                         >
-                            {loading ? "Reservando..." : "Confirmar Reserva"}
+                            {loading ? "Cancelando..." : "Cancelar Reserva"}
                         </Button>
                     )}
-                    <DialogClose asChild>
-                        <Button variant="destructive">Cancelar</Button>
-                    </DialogClose>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

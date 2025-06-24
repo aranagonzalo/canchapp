@@ -134,6 +134,7 @@ export default function MyTeamsPlayer({ id_jugador }: { id_jugador: number }) {
                 titulo: "Nuevo equipo creado",
                 mensaje: `¡Felicidades! Has creado el equipo: ${form.nombre_equipo}. Ahora puedes reservar algún complejo.`,
                 url: "/complexes",
+                destinatarios: [{ id: user?.id!, tipo: "jugador" }],
             });
             setModalOpen(false);
             fetchEquipos();

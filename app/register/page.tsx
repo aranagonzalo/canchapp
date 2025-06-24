@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, CalendarIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast, Toaster } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { es } from "date-fns/locale";
-import { DayPicker } from "react-day-picker";
+import Image from "next/image";
 import { useUser } from "@/context/userContext";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -43,8 +43,7 @@ type AdminField =
     | "adminEmail"
     | "adminEmail2"
     | "adminPassword"
-    | "adminPassword2"
-    | "adminCelular";
+    | "adminPassword2";
 
 const diasSemana = [
     { nombre: "Lunes", index: 1 },
@@ -103,7 +102,6 @@ const initialAdminData: AdminFormState = {
     adminEmail2: "",
     adminPassword: "",
     adminPassword2: "",
-    adminCelular: "",
 };
 
 export default function RegisterPage() {
@@ -183,7 +181,6 @@ export default function RegisterPage() {
                                       apellido: admin.adminApellido,
                                       mail: admin.adminEmail,
                                       contrasena: admin.adminPassword,
-                                      telefono: admin.adminCelular,
                                   },
                               }
                     ),
@@ -227,11 +224,7 @@ export default function RegisterPage() {
             }
 
             toast.success("Inicio de sesión exitoso");
-            await notificar({
-                titulo: "Bienvenido/a a CanchaApp",
-                mensaje:
-                    "Tu cuenta ha sido creada con éxito. ¡Ya puedes explorar y disfrutar del mundo del fútbol con nosotros!",
-            });
+
             login(loginData); // guarda en contexto
             if (type === "jugador") {
                 router.push("/home");
@@ -265,7 +258,6 @@ export default function RegisterPage() {
                       adminEmail2: "",
                       adminPassword: "",
                       adminPassword2: "",
-                      adminCelular: "",
                   });
         } catch (error) {
             console.error("Error de red:", error);
@@ -281,19 +273,25 @@ export default function RegisterPage() {
             <Toaster richColors position="top-right" />
 
             <div
-                className="relative min-h-screen bg-cover bg-center flex items-center justify-center px-4"
+                className="relative min-h-screen bg-cover bg-center flex items-center justify-center sm:px-4"
                 style={{
                     backgroundImage: "url('/images/banners/banner5.jpg')",
                 }}
             >
                 <div className="absolute inset-0 bg-black opacity-60 z-10" />
-                <div className="relative z-20 w-full max-w-2xl bg-[#0b1120]/90 p-6 sm:p-10 rounded-xl shadow-xl max-h-[90vh]">
+                <div className="relative z-20 w-full max-w-2xl bg-[#0b1120]/90 p-6 sm:p-10 rounded-xl shadow-xl max-h-[95dvh] overflow-y-auto">
                     <a
                         href="/"
                         className="flex items-center justify-center gap-2 text-xl font-bold mb-6 text-white"
                     >
                         <div className="bg-gradient-to-br from-green-400 to-green-700 p-1.5 rounded-md">
-                            <Calendar className="w-5 h-5 text-white" />
+                            <Image
+                                src="/logo-canchapp.png"
+                                alt="Logo Canchapp"
+                                width={100}
+                                height={100}
+                                className="w-6 h-6"
+                            />
                         </div>
                         <span className="text-white">CanchApp</span>
                     </a>
@@ -314,8 +312,11 @@ export default function RegisterPage() {
                             </TabsTrigger>
                         </TabsList>
 
-                        <TabsContent value="jugador">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
+                        <TabsContent
+                            value="jugador"
+                            className="max-h-[414px] overflow-y-auto"
+                        >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                                 {Object.entries(jugador).map(
                                     ([field, value]) => {
                                         const labelMap: Record<string, string> =
@@ -584,7 +585,6 @@ export default function RegisterPage() {
                                         adminEmail2: "",
                                         adminPassword: "",
                                         adminPassword2: "",
-                                        adminCelular: "",
                                     };
                                     return (
                                         <div
@@ -723,7 +723,6 @@ export default function RegisterPage() {
                                         "adminEmail2",
                                         "adminPassword",
                                         "adminPassword2",
-                                        "adminCelular",
                                     ] as AdminField[]
                                 ).map((field) => {
                                     const label =
@@ -749,7 +748,6 @@ export default function RegisterPage() {
                                         adminEmail2: "laura@mail.com",
                                         adminPassword: "••••••••",
                                         adminPassword2: "••••••••",
-                                        adminCelular: "+54 911 9999 8888",
                                     };
                                     return (
                                         <div

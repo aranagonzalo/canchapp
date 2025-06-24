@@ -1,8 +1,25 @@
 // src/components/landing/TeamBuilderSection.tsx
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useUser } from "@/context/userContext";
+
 import Image from "next/image";
 import { AvatarStack } from "../AvatarStack";
+import { Button } from "../ui/button";
 
 export function TeamBuilderSection() {
+    const router = useRouter();
+    const { user } = useUser();
+
+    const handleCreateTeam = () => {
+        if (user) {
+            router.push("/home?tab=equipos&subtab=mis&create=true");
+        } else {
+            router.push("/login");
+        }
+    };
+
     return (
         <section className="relative bg-[#030712] text-white py-20 px-4">
             {/* Gradiente blur decorativo centrado */}
@@ -76,9 +93,12 @@ export function TeamBuilderSection() {
                                         – 5 jugadores
                                     </span>
                                 </p>
-                                <button className="mt-3 bg-gradient-to-r from-custom-green to-custom-dark-green hover:bg-from-custom-dark-green hover:to-emerald-700 text-white px-4 py-2 rounded-md text-sm font-normal tracking-tight">
+                                <Button
+                                    onClick={handleCreateTeam}
+                                    className="cursor-pointer mt-3 bg-gradient-to-r from-custom-green to-custom-dark-green hover:from-custom-dark-green hover:to-emerald-700 text-white px-4 py-2 rounded-md text-sm font-normal tracking-tight"
+                                >
                                     Crear mi Equipo
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </div>

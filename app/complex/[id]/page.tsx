@@ -8,8 +8,14 @@ import { Star, MapPin, Phone, Users, Clock } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { ReservaModal } from "./ReservaModal";
 import { Toaster } from "sonner";
+import { formatPhoneForWhatsApp } from "@/lib/utils";
+import { useUser } from "@/context/userContext";
+import ReviewsModal from "./ReviewsModal";
+import ReviewsList from "./ReviewsList";
+import { StarRating } from "@/components/StarRating";
 
 interface Complejo {
+    id_admin: number;
     id_complejo: number;
     nombre_complejo: string;
     telefono: string;
@@ -28,15 +34,27 @@ interface Cancha {
     imagen?: string;
 }
 
+interface ReviewStats {
+    avg_rating: number;
+    total_reviews: number;
+}
+
 export default function ComplejoDetallePage() {
     const { id } = useParams();
+    const { user } = useUser();
     const router = useRouter();
     const [complejo, setComplejo] = useState<Complejo | null>(null);
     const [loading, setLoading] = useState(true);
+    const [openReviewModal, setOpenReviewModal] = useState(false);
     const [canchas, setCanchas] = useState<Cancha[]>([]);
+    const [reviews, setReviews] = useState<ReviewStats | null>(null);
     const [selectedCanchaId, setSelectedCanchaId] = useState<number | null>(
         null
     );
+    const [selectedCanchaName, setSelectedCanchaName] = useState<string | null>(
+        null
+    );
+    const [isOperational, setIsOperational] = useState(false);
 
     useEffect(() => {
         fetch(`/api/complexes/${id}`)
@@ -45,6 +63,8 @@ export default function ComplejoDetallePage() {
                 if (data.Status === "Respuesta ok") {
                     setComplejo(data.complejo);
                     setCanchas(data.canchas); // ✅ ahora también seteamos las canchas
+                    setReviews(data.reviews_stats);
+                    setIsOperational(data.tiene_horario_operativo);
                 } else {
                     setComplejo(null);
                 }
@@ -88,18 +108,66 @@ export default function ComplejoDetallePage() {
             >
                 <div className="absolute inset-0 flex items-end p-6 max-w-[1200px] mx-auto">
                     <div>
-                        <h1 className="text-3xl font-bold mb-1">
+                        <h1 className="text-3xl font-bold mb-2">
                             {complejo.nombre_complejo}
                         </h1>
-                        <p className="flex items-center text-sm text-gray-300">
+                        <div className="flex items-center text-sm text-gray-300">
                             <MapPin className="w-4 h-4 mr-1" />
-                            {complejo.ciudad}, {complejo.direccion}
-                            <Star className="ml-4 w-4 h-4 text-yellow-400 fill-yellow-400" />
-                            <span className="ml-1">4.8 (8 reseñas)</span>
-                        </p>
+                            <p className="mr-3">
+                                {complejo.ciudad}, {complejo.direccion}
+                            </p>
+                            {reviews && (
+                                <StarRating
+                                    rating={reviews.avg_rating}
+                                    totalReviews={reviews.total_reviews}
+                                    showTotal
+                                    totalTextColor="text-gray-300"
+                                />
+                            )}
+                            {/* <span className="ml-1">
+                                {reviews?.avg_rating} ({reviews?.total_reviews}{" "}
+                                reseñas)
+                            </span> */}
+                        </div>
+                    </div>
+                    <div className="ml-7 flex flex-col gap-4 md:flex-row">
+                        <a
+                            href={`https://wa.me/${formatPhoneForWhatsApp(
+                                complejo.telefono
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-2 w-fit font-medium flex gap-2 bg-[#1b8d4a] hover:bg-[#007933] justify-center items-center text-white px-2.5 py-2 rounded-md text-xs transition"
+                        >
+                            <img src="/whatsapp.png" className="w-5 h-5" />{" "}
+                            WhatsApp
+                        </a>
+                        <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                                `${complejo.direccion} - ${complejo.ciudad}`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-2 w-fit font-medium flex gap-2 bg-white hover:bg-gray-300 justify-center items-center text-black px-2.5 py-2 rounded-md text-xs transition"
+                        >
+                            <img src="/maps.png" className="w-5 h-5" /> Maps
+                        </a>
                     </div>
                     <div className="ml-auto flex gap-2">
-                        {/* <Button variant="secondary">Guardar</Button> */}
+                        <Button
+                            onClick={() => setOpenReviewModal(true)}
+                            variant="secondary"
+                            className="cursor-pointer hover:bg-gray-300"
+                        >
+                            Califica este complejo
+                        </Button>
+                        {openReviewModal && user?.id && (
+                            <ReviewsModal
+                                idComplejo={complejo?.id_complejo}
+                                idJugador={user?.id}
+                                onClose={() => setOpenReviewModal(false)}
+                            />
+                        )}
                     </div>
                 </div>
             </div>
@@ -188,24 +256,39 @@ export default function ComplejoDetallePage() {
                                         </p>
 
                                         <Button
-                                            onClick={() =>
+                                            disabled={!isOperational}
+                                            onClick={() => {
                                                 setSelectedCanchaId(
                                                     cancha.id_cancha
-                                                )
-                                            }
+                                                );
+                                                setSelectedCanchaName(
+                                                    cancha.nombre_cancha
+                                                );
+                                            }}
                                             className="mt-3 cursor-pointer w-full bg-gradient-to-r from-custom-dark-green to-custom-green hover:from-emerald-700 hover:to-emerald-600"
                                         >
                                             Reservar
                                         </Button>
+                                        {!isOperational && (
+                                            <p className="text-xs text-red-400 mt-1 text-center">
+                                                Este complejo aún no tiene
+                                                horarios disponibles.
+                                            </p>
+                                        )}
                                         {selectedCanchaId && (
                                             <ReservaModal
+                                                idAdmin={complejo?.id_admin}
                                                 idComplejo={
                                                     complejo?.id_complejo
                                                 }
                                                 idCancha={selectedCanchaId}
-                                                onClose={() =>
-                                                    setSelectedCanchaId(null)
+                                                nombreCancha={
+                                                    selectedCanchaName!
                                                 }
+                                                onClose={() => {
+                                                    setSelectedCanchaId(null);
+                                                    setSelectedCanchaName(null);
+                                                }}
                                             />
                                         )}
                                     </div>
@@ -231,9 +314,7 @@ export default function ComplejoDetallePage() {
 
                 <TabsContent value="resenas">
                     <h2 className="text-xl font-bold mb-4">Reseñas</h2>
-                    <p className="text-sm text-gray-400">
-                        Aún no hay reseñas disponibles.
-                    </p>
+                    <ReviewsList idComplejo={complejo.id_complejo} />
                 </TabsContent>
             </Tabs>
         </div>

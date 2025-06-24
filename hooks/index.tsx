@@ -64,29 +64,40 @@ export function useNotifications() {
         titulo,
         mensaje,
         url,
+        destinatarios,
     }: {
         titulo: string;
         mensaje: string;
         url?: string;
+        destinatarios: { id: number; tipo: string }[];
     }) => {
         try {
-            const { id, tipo } = await esperarUser();
+            const currentUser = await esperarUser();
 
-            const res = await fetch(`/api/notificaciones/crear`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    id_usuario: id,
-                    tipo,
-                    titulo,
-                    mensaje,
-                    url: url || null,
-                }),
-            });
+            const usuarios = destinatarios?.length
+                ? destinatarios
+                : [currentUser]; // si no se pasa nada, me notifico a mí
 
-            if (!res.ok) {
-                toast.error("Error al crear la notificación");
-            } else {
+            for (const usuario of usuarios) {
+                const res = await fetch(`/api/notificaciones/crear`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        id_usuario: usuario.id,
+                        tipo: usuario.tipo,
+                        titulo,
+                        mensaje,
+                        url: url || null,
+                    }),
+                });
+
+                if (!res.ok) {
+                    toast.error(`Error al notificar al usuario ${usuario.id}`);
+                }
+            }
+
+            // Si yo estoy incluido, actualizo mi estado local
+            if (usuarios.some((u) => u.id === currentUser.id)) {
                 fetchNotifications();
                 toast.success(titulo, {
                     description: mensaje,

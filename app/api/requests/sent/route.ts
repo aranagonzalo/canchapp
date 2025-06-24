@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/supabase";
 
 export async function GET(req: NextRequest) {
-    const searchParams = req.nextUrl.searchParams;
-    const id = searchParams.get("id");
+    const id = req.nextUrl.searchParams.get("id");
 
     if (!id) {
         return NextResponse.json(
@@ -15,37 +14,20 @@ export async function GET(req: NextRequest) {
     const jugadorId = parseInt(id);
 
     try {
-        // 1. Obtener solicitudes enviadas por el jugador
         const { data: solicitudesData, error: solicitudesError } = await db
             .from("solicitudes")
-            .select("*")
+            .select("*, equipo(nombre_equipo)")
             .eq("id_jugador", jugadorId);
 
         if (solicitudesError) throw solicitudesError;
 
-        // 2. Obtener los equipos donde participa el jugador
-        const { data: equiposData, error: equiposError } = await db
-            .from("equipo")
-            .select("id_equipo, nombre_equipo")
-            .contains("id_jugadores", [jugadorId]);
-
-        if (equiposError) throw equiposError;
-
-        // 3. Enriquecer solicitudes con nombre del equipo
-        const enriched = solicitudesData.map((solicitud) => {
-            const equipo = equiposData.find(
-                (e) => e.id_equipo === solicitud.id_equipo
-            );
-            return {
-                ...solicitud,
-                nombre_equipo: equipo
-                    ? equipo.nombre_equipo
-                    : "Equipo no encontrado",
-            };
-        });
-
-        // 4. Filtrar por estado pendiente
-        const pendientes = enriched.filter((s) => s.estado === "Pendiente");
+        const pendientes = solicitudesData
+            .filter((s) => s.estado === "Pendiente")
+            .map((s) => ({
+                ...s,
+                nombre_equipo:
+                    s.equipo?.nombre_equipo || "Equipo no encontrado",
+            }));
 
         return NextResponse.json(pendientes);
     } catch (error) {

@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { StarRating } from "@/components/StarRating";
+import { formatHourRange } from "@/lib/utils";
 
 interface Dashboard {
     complejos_recomendados: {
@@ -47,8 +48,8 @@ interface Reserva {
     id: number;
     fecha: string;
     horas: string[];
-    estado: string;
-    nombre_complejo: string;
+    is_active: string;
+    complejo: { nombre_complejo: string; direccion: string };
     direccion: string;
     id_equipo: number;
 }
@@ -191,7 +192,7 @@ export default function HomePage() {
                             <div className="flex flex-col w-full">
                                 <div className="w-full flex justify-between items-center">
                                     <p className="text-sm text-gray-400 mb-1">
-                                        Complejos Favoritos
+                                        Reseñas Escritas
                                     </p>
                                     <MapPin className="text-emerald-400 w-4 h-4" />
                                 </div>
@@ -199,7 +200,7 @@ export default function HomePage() {
                                     4
                                 </h2>
                                 <p className="text-xs text-gray-500">
-                                    Visitaste 8 complejos en total
+                                    4.2 es tu promedio de puntaje
                                 </p>
                             </div>
                         </div>
@@ -221,12 +222,20 @@ export default function HomePage() {
                                         className="bg-[#1a1f2b] p-4 rounded-xl flex justify-between items-center border border-gray-800"
                                     >
                                         <div className="flex items-start gap-3">
-                                            <div className="bg-green-600/20 p-2 rounded-md">
+                                            <div className="bg-green-600/20 p-2 rounded-md self-center">
                                                 <Calendar className="w-5 h-5 text-green-400" />
                                             </div>
                                             <div>
                                                 <p className="font-semibold">
-                                                    {r.nombre_complejo}
+                                                    {r.complejo.nombre_complejo}{" "}
+                                                    {!r.is_active && (
+                                                        <span className="ml-2 bg-white text-black text-[11px] py-1 px-2 rounded-full">
+                                                            Cancelada
+                                                        </span>
+                                                    )}
+                                                </p>
+                                                <p className="text-sm text-gray-400">
+                                                    {formatHourRange(r.horas)}
                                                 </p>
                                                 <p className="text-sm text-gray-400">
                                                     {r.fecha}

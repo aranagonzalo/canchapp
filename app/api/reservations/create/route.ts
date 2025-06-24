@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
             id_complejo,
             fecha,
             horas,
-            estado: true, // booleano 'Confirmado'
+            is_active: true, // booleano 'Activa'
         });
 
         if (insertError) {

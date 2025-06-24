@@ -18,7 +18,7 @@ export function HowItWorks() {
         {
             title: "Reserva tu Horario",
             description:
-                "Selecciona el día y la hora que prefieras, realiza el pago y recibe la confirmación al instante.",
+                "Selecciona el día y horario que prefieras, y reservá al instante.",
             icon: <LucideClock className="w-10 h-10 text-white" />,
         },
     ];

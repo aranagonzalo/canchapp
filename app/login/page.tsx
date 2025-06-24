@@ -3,10 +3,10 @@
 
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useUser } from "@/context/userContext";
-import { Calendar } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast, Toaster } from "sonner";
+import Image from "next/image";
 
 const LoginPage = () => {
     const [email, setEmail] = useState("");
@@ -84,7 +84,13 @@ const LoginPage = () => {
                         className="flex items-center justify-center gap-2 text-xl font-bold mb-6 text-white"
                     >
                         <div className="bg-gradient-to-br from-green-400 to-green-700 p-1.5 rounded-md">
-                            <Calendar />
+                            <Image
+                                src="/logo-canchapp.png"
+                                alt="Logo Canchapp"
+                                width={100}
+                                height={100}
+                                className="w-6 h-6"
+                            />
                         </div>
                         <span className="text-white">CanchApp</span>
                     </a>

@@ -80,6 +80,7 @@ export default function Players() {
     const filteredJugadores = useMemo(() => {
         return jugadores.filter((j) => {
             const fullName = `${j.nombre} ${j.apellido}`.toLowerCase();
+
             return (
                 fullName.includes(filters.nombre.toLowerCase()) &&
                 (filters.edad
@@ -92,7 +93,7 @@ export default function Players() {
                       (filters.edad === "18+" && j.edad > 18)
                     : true) &&
                 (filters.sexo
-                    ? j.sexo.toLowerCase() === filters.sexo.toLowerCase()
+                    ? j.sexo?.toLowerCase?.() === filters.sexo.toLowerCase()
                     : true) &&
                 (filters.pierna_habil
                     ? j.pierna_habil?.toLowerCase?.() ===
@@ -194,11 +195,9 @@ export default function Players() {
                         />
                     </SelectTrigger>
                     <SelectContent className="bg-[#1a1f2b] border-gray-800 text-white">
-                        {uniqueValues("sexo").map((sexo) => (
-                            <SelectItem key={sexo} value={sexo.toString()}>
-                                {sexo}
-                            </SelectItem>
-                        ))}
+                        <SelectItem value="Hombre">Hombre</SelectItem>
+                        <SelectItem value="Mujer">Mujer</SelectItem>
+                        <SelectItem value="Otro">Otro</SelectItem>
                     </SelectContent>
                 </Select>
 

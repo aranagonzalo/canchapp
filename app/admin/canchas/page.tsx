@@ -31,15 +31,18 @@ export default function CanchasAdmin() {
     );
     const [modalCrear, setModalCrear] = useState(false);
 
-    useEffect(() => {
+    const fetchCanchas = async () => {
         if (!user?.id) return;
-        fetch(`/api/admin/canchas?id_admin=${user.id}`)
-            .then((res) => res.json())
-            .then((data) => {
-                setCanchas(data?.canchas || []);
-                setIdComplejo(data?.id_complejo);
-                setLoading(false);
-            });
+        setLoading(true);
+        const res = await fetch(`/api/admin/canchas?id_admin=${user.id}`);
+        const data = await res.json();
+        setCanchas(data?.canchas || []);
+        setIdComplejo(data?.id_complejo);
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        fetchCanchas();
     }, [user]);
 
     const eliminarCancha = async (id: number) => {
@@ -179,6 +182,7 @@ export default function CanchasAdmin() {
                 <CrearCanchaModal
                     onClose={() => setModalCrear(false)}
                     idComplejo={idComplejo} // debes tenerlo guardado
+                    onCreated={fetchCanchas}
                 />
             )}
         </div>

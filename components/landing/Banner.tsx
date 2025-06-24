@@ -1,6 +1,20 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useUser } from "@/context/userContext";
 import { AvatarStack } from "../AvatarStack";
 
 export default function Banner() {
+    const router = useRouter();
+    const { user } = useUser();
+
+    const handleVerComplejos = () => {
+        if (user) {
+            router.push("/complexes");
+        } else {
+            router.push("/login");
+        }
+    };
     return (
         <section className="relative text-white">
             <div className="absolute inset-0 bg-black opacity-60 z-10" />
@@ -23,18 +37,20 @@ export default function Banner() {
                         Forma tu equipo, elige tu horario y ¡a jugar!
                     </p>
                     <div className="flex flex-wrap gap-4">
-                        <a
-                            href="/reservar"
-                            className="bg-gradient-to-r from-custom-green to-custom-dark-green transition-all hover:bg-green-600 shadow text-white px-6 py-3 rounded-full font-semibold"
-                        >
-                            Reservar Ahora
-                        </a>
-                        <a
-                            href="/complexes"
-                            className="bg-white text-black px-6 py-3 rounded-full font-semibold"
-                        >
-                            Ver Complejos
-                        </a>
+                        <div className="flex flex-wrap gap-4">
+                            <button
+                                onClick={handleVerComplejos}
+                                className="cursor-pointer bg-gradient-to-r hover:scale-[1.03] from-custom-green to-custom-dark-green transition-all hover:from-emerald-500 hover:to-emerald-700 shadow text-white px-6 py-3 rounded-full font-semibold"
+                            >
+                                Reservar Ahora
+                            </button>
+                            <button
+                                onClick={handleVerComplejos}
+                                className="cursor-pointer transition-all hover:scale-[1.03] hover:bg-white  bg-gray-200 text-black px-6 py-3 rounded-full font-semibold"
+                            >
+                                Ver Complejos
+                            </button>
+                        </div>
                     </div>
                     <div className="mt-6 flex items-center text-sm text-gray-300">
                         <AvatarStack />

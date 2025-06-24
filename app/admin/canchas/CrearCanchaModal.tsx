@@ -9,14 +9,23 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
 export default function CrearCanchaModal({
     onClose,
     idComplejo,
+    onCreated,
 }: {
     onClose: () => void;
+    onCreated: () => void;
     idComplejo: number;
 }) {
     const [nombre, setNombre] = useState("");
@@ -38,6 +47,7 @@ export default function CrearCanchaModal({
                 id_complejo: idComplejo,
             }),
         });
+        onCreated();
         setLoading(false);
         onClose();
     };
@@ -58,27 +68,39 @@ export default function CrearCanchaModal({
                         <Switch checked={techo} onCheckedChange={setTecho} />
                         <span>{techo ? "Con techo" : "Sin techo"}</span>
                     </div>
-                    <Input
-                        placeholder="Capacidad de jugadores"
+
+                    <Select
                         value={jugadores}
-                        onChange={(e) => setJugadores(e.target.value)}
-                        type="number"
-                    />
+                        onValueChange={(value) => setJugadores(value)}
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder="Cantidad de jugadores" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="5">Fútbol 5</SelectItem>
+                            <SelectItem value="7">Fútbol 7</SelectItem>
+                            <SelectItem value="9">Fútbol 9</SelectItem>
+                            <SelectItem value="11">Fútbol 11</SelectItem>
+                        </SelectContent>
+                    </Select>
+
                     <Input
+                        min={500}
                         placeholder="Precio por hora"
                         value={precio}
                         onChange={(e) => setPrecio(e.target.value)}
                         type="number"
                     />
+
                     <div className="flex justify-end gap-2">
                         <Button
                             onClick={handleCreate}
                             disabled={loading}
                             className="cursor-pointer bg-gradient-to-br from-custom-dark-green to-custom-green hover:from-emerald-700 hover:to-emerald-600"
                         >
-                            {loading ? (
+                            {loading && (
                                 <Loader2 className="animate-spin w-4 h-4 mr-2" />
-                            ) : null}
+                            )}
                             Confirmar
                         </Button>
                         <Button variant="destructive" onClick={onClose}>

@@ -46,7 +46,7 @@ interface Equipo {
 
 export default function MyTeamsPlayer({ id_jugador }: { id_jugador: number }) {
     const { user } = useUser();
-    const { notificar } = useNotifications();
+
     const [equipos, setEquipos] = useState<Equipo[]>([]);
     const [loading, setLoading] = useState(true);
     const [deletingEquipoId, setDeletingEquipoId] = useState<number | null>(
@@ -130,12 +130,7 @@ export default function MyTeamsPlayer({ id_jugador }: { id_jugador: number }) {
             });
             if (!res.ok) throw new Error("Error al crear equipo");
             toast.success("Equipo creado correctamente");
-            await notificar({
-                titulo: "Nuevo equipo creado",
-                mensaje: `¡Felicidades! Has creado el equipo: ${form.nombre_equipo}. Ahora puedes reservar algún complejo.`,
-                url: "/complexes",
-                destinatarios: [{ id: user?.id!, tipo: "jugador" }],
-            });
+
             setModalOpen(false);
             fetchEquipos();
         } catch (err) {
@@ -186,6 +181,9 @@ export default function MyTeamsPlayer({ id_jugador }: { id_jugador: number }) {
                 break;
             case "Futbol 7":
                 setForm((prev) => ({ ...prev, cant_max: 14 }));
+                break;
+            case "Futbol 9":
+                setForm((prev) => ({ ...prev, cant_max: 18 }));
                 break;
             case "Futbol 11":
                 setForm((prev) => ({ ...prev, cant_max: 22 }));
@@ -278,6 +276,9 @@ export default function MyTeamsPlayer({ id_jugador }: { id_jugador: number }) {
                                 </SelectItem>
                                 <SelectItem value="Futbol 7">
                                     Futbol 7
+                                </SelectItem>
+                                <SelectItem value="Futbol 9">
+                                    Futbol 9
                                 </SelectItem>
                                 <SelectItem value="Futbol 11">
                                     Futbol 11

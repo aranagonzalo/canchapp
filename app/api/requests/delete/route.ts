@@ -1,19 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/supabase";
 
 export async function DELETE(
-    _req: Request,
-    { params }: { params: Promise<{ id_jugador: string; id_equipo: string }> }
+    _req: NextRequest,
+    { params }: { params: Promise<{ playerId: string; teamId: string }> }
 ) {
-    const id_jugador = parseInt((await params).id_jugador);
-    const id_equipo = parseInt((await params).id_equipo);
-
-    if (isNaN(id_jugador) || isNaN(id_equipo)) {
-        return NextResponse.json(
-            { message: "Parámetros inválidos" },
-            { status: 400 }
-        );
-    }
+    const searchParams = _req.nextUrl.searchParams;
+    const id_jugador = searchParams.get("id_jugador");
+    const id_equipo = searchParams.get("id_equipo");
 
     try {
         const { error } = await db

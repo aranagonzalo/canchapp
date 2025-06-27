@@ -204,3 +204,66 @@ html {
 .fc-timegrid-more-link {
     box-shadow: none;
 }
+
+/* Estilo general de los botones prev/next */
+.swiper-button-prev,
+.swiper-button-next {
+    color: black !important; /* custom-green */
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 50%;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px; /* más pequeño */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease;
+}
+
+.swiper-button-prev:hover,
+.swiper-button-next:hover {
+    transform: scale(1.1);
+}
+
+/* Asegura que los íconos internos se escalen correctamente */
+.swiper-button-prev::after,
+.swiper-button-next::after {
+    font-size: 14px !important;
+    font-weight: 800 !important;
+}
+
+/* Posición personalizada (opcional, ajusta según el diseño) */
+.swiper-button-prev {
+    left: 14px !important;
+}
+.swiper-button-next {
+    right: 14px !important;
+}
+
+/* Estilo de los puntos de paginación */
+.swiper-pagination-bullet {
+    background: white !important;
+    opacity: 0.4;
+    transition: all 0.3s ease;
+}
+
+.swiper-pagination-bullet-active {
+    background: #22c45f !important;
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+@keyframes pulse-slow {
+    0%,
+    100% {
+        background-color: #1a1f2b;
+    }
+    50% {
+        background-color: #2a2f3b;
+    }
+}
+
+.animate-pulse-slow {
+    animation: pulse-slow 2s ease-in-out infinite;
+}

@@ -10,6 +10,10 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { Edit, MapPin, Phone, Star } from "lucide-react";
 import CierresTemporalesSection from "./CierresTemporales";
 import HourSelect from "./HourSelect";
+import GaleriaImagenesModal from "./GaleriaImagenesModal";
+import BannerCarousel from "./BannerCarousel";
+import FullscreenCarousel from "./FullScreenCarousel";
+import SkeletonCarousel from "./SkeletonCarousel";
 
 interface Complejo {
     id_complejo: number;
@@ -38,6 +42,22 @@ export default function ComplejoAdminProfile() {
     const [editMode, setEditMode] = useState(false);
     const [loading, setLoading] = useState(true);
     const [loadingSave, setLoadingSave] = useState(false);
+    const [showImagenesModal, setShowImagenesModal] = useState(false);
+    const [imagenes, setImagenes] = useState<string[]>([]);
+    const [verGaleriaCompleta, setVerGaleriaCompleta] = useState(false);
+    const [loadingImages, setLoadingImages] = useState(false);
+
+    useEffect(() => {
+        if (!complejo?.id_complejo) return;
+        setLoadingImages(true);
+        fetch(`/api/admin/complex/images?id_complejo=${complejo.id_complejo}`)
+            .then((res) => res.json())
+            .then((data) => {
+                const urls = data.images?.map((img: any) => img.url) || [];
+                setImagenes(urls);
+                setLoadingImages(false);
+            });
+    }, [complejo?.id_complejo]);
 
     function cleanNulls<T extends Record<string, any>>(obj: T): T {
         const cleaned: any = {};
@@ -157,13 +177,21 @@ export default function ComplejoAdminProfile() {
         <div className="bg-gradient-to-b to-[#0b1120] from-[#030712] min-h-screen pb-20  text-white flex-col flex items-center justify-center">
             <Toaster richColors position="top-right" />
             {/* Banner */}
-            <div
-                className="relative h-64 md:h-96 w-full bg-cover bg-center bg-no-repeat"
-                style={{
-                    backgroundImage: `url('/images/banners/banner4.jpg')`,
-                }}
-            >
-                <div className="w-full h-full bg-gradient-to-b from-transparent via-transparent to-black opacity-80"></div>
+            <div className="relative h-64 md:h-96 w-full">
+                {loadingImages ? (
+                    <SkeletonCarousel />
+                ) : imagenes.length > 0 ? (
+                    <BannerCarousel
+                        images={imagenes}
+                        onClickImage={() => setVerGaleriaCompleta(true)}
+                    />
+                ) : (
+                    <img
+                        src="/images/banners/banner4.jpg"
+                        className="w-full h-full object-cover"
+                    />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black opacity-80" />
                 <div className="absolute inset-0 flex items-end p-6 max-w-[1200px] mx-auto">
                     <div>
                         <h1 className="text-3xl font-bold mb-1">
@@ -176,8 +204,18 @@ export default function ComplejoAdminProfile() {
                             <span className="ml-1">4.8 (8 reseñas)</span>
                         </p>
                     </div>
+
+                    <Button
+                        size="sm"
+                        onClick={() => setShowImagenesModal(true)}
+                        className="cursor-pointer absolute bottom-4 right-4 bg-white text-black hover:bg-gray-100 hover:scale-[1.03] transition-all z-20"
+                    >
+                        <Edit className="w-4 h-4 mr-1" />
+                        Editar Fotos
+                    </Button>
                 </div>
             </div>
+
             <div className="w-full max-w-[700px] mt-8 border-gray-800 border bg-[#1a1f2b] rounded-xl p-8 mx-20">
                 <div className="flex justify-between items-center pb-8">
                     <h2 className="text-xl font-bold">
@@ -460,6 +498,18 @@ export default function ComplejoAdminProfile() {
                     )}
                 </div>
             </div>
+            <FullscreenCarousel
+                open={verGaleriaCompleta}
+                onClose={() => setVerGaleriaCompleta(false)}
+                images={imagenes}
+            />
+            {showImagenesModal && complejo?.id_complejo && (
+                <GaleriaImagenesModal
+                    idComplejo={complejo.id_complejo}
+                    onClose={() => setShowImagenesModal(false)}
+                    open={showImagenesModal}
+                />
+            )}
         </div>
     );
 }

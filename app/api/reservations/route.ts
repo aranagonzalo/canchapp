@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/supabase";
 
+interface Complejo {
+    id_admin: number;
+    id_complejo: number;
+    nombre_complejo: string;
+    direccion: string;
+    telefono: string;
+    administrador: {
+        mail: string;
+    };
+}
+
 export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const id = searchParams.get("id");
@@ -39,12 +50,21 @@ export async function GET(req: NextRequest) {
         const id_canchas = [...new Set(reservasData.map((r) => r.id_cancha))];
 
         // 3. Obtener información de complejo y cancha
-        const { data: complejoData } = await db
+        const { data: complejoData } = (await db
             .from("complejo")
             .select(
-                "id_admin, id_complejo, nombre_complejo, direccion, telefono"
+                `
+                id_admin,
+                id_complejo,
+                nombre_complejo,
+                direccion,
+                telefono,
+                administrador:administrador (
+                    mail
+                )
+                `
             )
-            .in("id_complejo", id_complejos);
+            .in("id_complejo", id_complejos)) as { data: Complejo[] | null };
 
         const { data: canchaData } = await db
             .from("cancha")
@@ -70,6 +90,7 @@ export async function GET(req: NextRequest) {
                 estado: res.estado, // string o boolean
                 nombre_equipo: equipo?.nombre_equipo || "Sin equipo",
                 id_admin: complejo?.id_admin,
+                mail_admin: complejo?.administrador?.mail,
                 nombre_complejo: complejo?.nombre_complejo || "",
                 direccion_complejo: complejo?.direccion || "",
                 telefono_complejo: complejo?.telefono || "",

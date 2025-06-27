@@ -16,6 +16,7 @@ interface Complejos {
     precio_promedio_turno: number;
     total_reviews: number;
     rating_promedio: number;
+    imagen_destacada: string;
 }
 
 export default function FeaturedComplexes() {
@@ -73,13 +74,15 @@ export default function FeaturedComplexes() {
                             <div className="relative h-48 w-full">
                                 {/* Imagen dummy mientras no viene del backend */}
                                 <Image
-                                    src={`/images/canchas/cancha${
-                                        (index % 3) + 1
-                                    }.jpeg`}
+                                    src={
+                                        c.imagen_destacada ||
+                                        "/images/banners/banner4.jpg"
+                                    }
                                     alt={c.nombre_complejo}
                                     fill
                                     className="object-cover"
                                 />
+
                                 <span className="absolute top-2 right-2 text-white text-xs font-semibold px-2 py-1 rounded-full bg-gradient-to-r from-custom-green to-custom-dark-green shadow">
                                     TOP {index + 1}
                                 </span>

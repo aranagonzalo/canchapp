@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { formatPhoneForWhatsApp } from "@/lib/utils";
+import { StarRating } from "@/components/StarRating";
 
 interface Complejo {
     id_complejo: number;
@@ -19,6 +20,8 @@ interface Complejo {
     ciudad: string;
     latitud: number;
     longitud: number;
+    total_reviews: number;
+    avg_puntuacion: number;
 }
 
 const geocodeCache: Map<string, { lat: number; lng: number }> = new Map();
@@ -129,6 +132,11 @@ export default function ComplejosPage() {
                                             <MapPin className="w-4 h-4" />
                                             {c.direccion} - {c.ciudad}
                                         </p>
+                                        <StarRating
+                                            rating={c.avg_puntuacion}
+                                            totalReviews={c.total_reviews}
+                                            showTotal
+                                        />
                                         <div className="flex flex-col gap-2 md:flex-row">
                                             <a
                                                 href={`https://wa.me/${formatPhoneForWhatsApp(

@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Users, Pencil, Trash2, PlusCircle, CalendarPlus } from "lucide-react";
 import EditarCanchaModal from "./EditarCanchaModal";
-import DisponiblesModal from "./DisponiblesModal";
 import CrearCanchaModal from "./CrearCanchaModal";
 import { useUser } from "@/context/userContext";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Toaster } from "sonner";
+import ConfirmarEliminarModal from "./EliminarCanchaModal";
 
 interface Cancha {
     id_cancha: number;
@@ -26,10 +26,8 @@ export default function CanchasAdmin() {
     const [idComplejo, setIdComplejo] = useState(null);
     const [loading, setLoading] = useState(true);
     const [modalEditar, setModalEditar] = useState<Cancha | null>(null);
-    const [modalDisponibles, setModalDisponibles] = useState<Cancha | null>(
-        null
-    );
     const [modalCrear, setModalCrear] = useState(false);
+    const [modalEliminar, setModalEliminar] = useState<number | null>(null);
 
     const fetchCanchas = async () => {
         if (!user?.id) return;
@@ -102,7 +100,7 @@ export default function CanchasAdmin() {
                                 className="bg-[#1a1f2b] p-4 rounded-xl border border-gray-700"
                             >
                                 <div
-                                    className="h-28 bg-gray-700 rounded mb-3 bg-center bg-cover"
+                                    className="h-40 bg-white rounded mb-3 bg-center bg-cover"
                                     style={{
                                         backgroundImage: `url('${
                                             cancha.imagen ||
@@ -122,10 +120,17 @@ export default function CanchasAdmin() {
                                         </span>
                                     )}
                                 </div>
-                                <p className="text-sm text-gray-400 mb-1 flex items-center gap-1">
-                                    <Users className="w-4 h-4" /> Capacidad:{" "}
-                                    {cancha.cant_jugador} jugadores
-                                </p>
+                                <div className="flex justify-between text-sm text-gray-400 mb-1 ">
+                                    <p className="flex items-center gap-1">
+                                        {" "}
+                                        <Users className="w-4 h-4" /> Capacidad:{" "}
+                                        {cancha.cant_jugador} jugadores
+                                    </p>
+
+                                    <span className="text-base text-green-400 font-semibold px-2 py-0.5 rounded-full">
+                                        $ {cancha.precio_turno}/h
+                                    </span>
+                                </div>
 
                                 <div className="flex justify-between gap-2 mt-4">
                                     <Button
@@ -136,22 +141,13 @@ export default function CanchasAdmin() {
                                         <Pencil className="w-4 h-4 mr-1" />{" "}
                                         Editar
                                     </Button>
-                                    {/* <Button
-                                        size="sm"
-                                        onClick={() =>
-                                            setModalDisponibles(cancha)
-                                        }
-                                        className="cursor-pointer bg-gradient-to-br from-custom-dark-green to-custom-green hover:from-emerald-700 hover:to-emerald-600"
-                                    >
-                                        <CalendarPlus className="w-4 h-4 mr-1" />{" "}
-                                        Fechas
-                                    </Button> */}
+
                                     <Button
                                         size="sm"
                                         variant="secondary"
                                         className="cursor-pointer"
                                         onClick={() =>
-                                            eliminarCancha(cancha.id_cancha)
+                                            setModalEliminar(cancha.id_cancha)
                                         }
                                     >
                                         <Trash2 className="w-4 h-4 mr-1" />{" "}
@@ -168,13 +164,7 @@ export default function CanchasAdmin() {
                 <EditarCanchaModal
                     cancha={modalEditar}
                     onClose={() => setModalEditar(null)}
-                />
-            )}
-
-            {modalDisponibles && (
-                <DisponiblesModal
-                    cancha={modalDisponibles}
-                    onClose={() => setModalDisponibles(null)}
+                    onUpdated={fetchCanchas}
                 />
             )}
 
@@ -183,6 +173,14 @@ export default function CanchasAdmin() {
                     onClose={() => setModalCrear(false)}
                     idComplejo={idComplejo} // debes tenerlo guardado
                     onCreated={fetchCanchas}
+                />
+            )}
+
+            {modalEliminar && (
+                <ConfirmarEliminarModal
+                    canchaId={modalEliminar}
+                    onClose={() => setModalEliminar(null)}
+                    onDeleted={fetchCanchas}
                 />
             )}
         </div>

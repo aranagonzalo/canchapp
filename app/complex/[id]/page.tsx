@@ -13,6 +13,9 @@ import { useUser } from "@/context/userContext";
 import ReviewsModal from "./ReviewsModal";
 import ReviewsList from "./ReviewsList";
 import { StarRating } from "@/components/StarRating";
+import SkeletonCarousel from "@/app/admin/complex/SkeletonCarousel";
+import BannerCarousel from "@/app/admin/complex/BannerCarousel";
+import FullscreenCarousel from "@/app/admin/complex/FullScreenCarousel";
 
 interface Complejo {
     id_admin: number;
@@ -22,6 +25,7 @@ interface Complejo {
     direccion: string;
     ciudad: string;
     descripcion: string | null;
+    administrador: { mail: string };
 }
 
 interface Cancha {
@@ -55,6 +59,21 @@ export default function ComplejoDetallePage() {
         null
     );
     const [isOperational, setIsOperational] = useState(false);
+    const [imagenes, setImagenes] = useState<string[]>([]);
+    const [verGaleriaCompleta, setVerGaleriaCompleta] = useState(false);
+    const [loadingImages, setLoadingImages] = useState(false);
+
+    useEffect(() => {
+        if (!complejo?.id_complejo) return;
+        setLoadingImages(true);
+        fetch(`/api/admin/complex/images?id_complejo=${complejo.id_complejo}`)
+            .then((res) => res.json())
+            .then((data) => {
+                const urls = data.images?.map((img: any) => img.url) || [];
+                setImagenes(urls);
+                setLoadingImages(false);
+            });
+    }, [complejo?.id_complejo]);
 
     useEffect(() => {
         fetch(`/api/complexes/${id}`)
@@ -100,14 +119,23 @@ export default function ComplejoDetallePage() {
         <div className="bg-gradient-to-b from-[#0b1120] to-[#030712] min-h-screen pb-20  text-white">
             <Toaster richColors position="top-right" />
             {/* Banner */}
-            <div
-                className="relative h-64 md:h-96 w-full bg-cover bg-center bg-no-repeat"
-                style={{
-                    backgroundImage: `url('/images/canchas/cancha1.jpeg')`,
-                }}
-            >
+            <div className="relative h-64 md:h-96 w-full bg-cover bg-center bg-no-repeat">
+                {loadingImages ? (
+                    <SkeletonCarousel />
+                ) : imagenes.length > 0 ? (
+                    <BannerCarousel
+                        images={imagenes}
+                        onClickImage={() => setVerGaleriaCompleta(true)}
+                    />
+                ) : (
+                    <img
+                        src="/images/banners/banner4.jpg"
+                        className="w-full h-full object-cover"
+                    />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black opacity-80" />
                 <div className="absolute inset-0 flex items-end p-6 max-w-[1200px] mx-auto">
-                    <div>
+                    <div className="z-30">
                         <h1 className="text-3xl font-bold mb-2">
                             {complejo.nombre_complejo}
                         </h1>
@@ -124,10 +152,6 @@ export default function ComplejoDetallePage() {
                                     totalTextColor="text-gray-300"
                                 />
                             )}
-                            {/* <span className="ml-1">
-                                {reviews?.avg_rating} ({reviews?.total_reviews}{" "}
-                                reseñas)
-                            </span> */}
                         </div>
                     </div>
                     <div className="ml-7 flex flex-col gap-4 md:flex-row">
@@ -137,7 +161,7 @@ export default function ComplejoDetallePage() {
                             )}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="mt-2 w-fit font-medium flex gap-2 bg-[#1b8d4a] hover:bg-[#007933] justify-center items-center text-white px-2.5 py-2 rounded-md text-xs transition"
+                            className="z-30 mt-2 w-fit font-medium flex gap-2 bg-[#1b8d4a] hover:bg-[#007933] justify-center items-center text-white px-2.5 py-2 rounded-md text-xs transition"
                         >
                             <img src="/whatsapp.png" className="w-5 h-5" />{" "}
                             WhatsApp
@@ -148,7 +172,7 @@ export default function ComplejoDetallePage() {
                             )}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="mt-2 w-fit font-medium flex gap-2 bg-white hover:bg-gray-300 justify-center items-center text-black px-2.5 py-2 rounded-md text-xs transition"
+                            className="z-30 mt-2 w-fit font-medium flex gap-2 bg-white hover:bg-gray-300 justify-center items-center text-black px-2.5 py-2 rounded-md text-xs transition"
                         >
                             <img src="/maps.png" className="w-5 h-5" /> Maps
                         </a>
@@ -157,7 +181,7 @@ export default function ComplejoDetallePage() {
                         <Button
                             onClick={() => setOpenReviewModal(true)}
                             variant="secondary"
-                            className="cursor-pointer hover:bg-gray-300"
+                            className="z-30 cursor-pointer hover:bg-gray-300"
                         >
                             Califica este complejo
                         </Button>
@@ -215,13 +239,11 @@ export default function ComplejoDetallePage() {
                                     className="bg-[#1a1f2b] p-4 rounded-xl border border-gray-700"
                                 >
                                     <div
-                                        className="h-28 bg-gray-700 rounded mb-3 bg-center bg-cover"
+                                        className="h-40 bg-gray-700 rounded mb-3 bg-center bg-cover"
                                         style={{
                                             backgroundImage: `url('${
                                                 cancha.imagen ||
-                                                `/images/canchas/cancha${
-                                                    i + 1
-                                                }.jpeg`
+                                                `/images/banners/banner4.jpg`
                                             }')`,
                                         }}
                                     ></div>
@@ -239,16 +261,6 @@ export default function ComplejoDetallePage() {
                                         <Users className="w-4 h-4" /> Capacidad:{" "}
                                         {cancha.cant_jugador} jugadores
                                     </p>
-                                    {/* <p className="text-sm text-gray-400 mb-1 flex items-center gap-1">
-                                        <Clock className="w-4 h-4" />{" "}
-                                        Disponible: {cancha.horario_apertura} -{" "}
-                                        {cancha.horario_cierre}
-                                    </p> */}
-                                    {/* {cancha.horarios_disponibles.length > 0 && (
-                                        <p className="text-sm text-green-400">
-                                            Disponible hoy
-                                        </p>
-                                    )} */}
 
                                     <div className="text-right -mt-4">
                                         <p className="text-green-400 font-bold mb-1">
@@ -277,6 +289,10 @@ export default function ComplejoDetallePage() {
                                         )}
                                         {selectedCanchaId && (
                                             <ReservaModal
+                                                mailAdmin={
+                                                    complejo?.administrador
+                                                        ?.mail
+                                                }
                                                 idAdmin={complejo?.id_admin}
                                                 idComplejo={
                                                     complejo?.id_complejo
@@ -317,6 +333,11 @@ export default function ComplejoDetallePage() {
                     <ReviewsList idComplejo={complejo.id_complejo} />
                 </TabsContent>
             </Tabs>
+            <FullscreenCarousel
+                open={verGaleriaCompleta}
+                onClose={() => setVerGaleriaCompleta(false)}
+                images={imagenes}
+            />
         </div>
     );
 }

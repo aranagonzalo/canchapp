@@ -23,7 +23,10 @@ interface Dashboard {
         id_complejo: number;
         total_reservas: number;
         nombre_complejo: string;
+        rating_promedio: number;
+        total_reviews: number;
         direccion: string;
+        imagen_destacada: string;
     }[];
 
     equipos: {
@@ -349,15 +352,20 @@ export default function HomePage() {
                             {dashboard?.complejos_recomendados?.map((c) => (
                                 <div
                                     key={c.id_complejo}
-                                    className="bg-[#1a1f2b] p-4 rounded-xl border border-gray-800"
+                                    className="bg-[#1a1f2b] p-3 rounded-xl border border-gray-800"
                                 >
                                     <img
-                                        className="h-24 w-full object-cover bg-gray-700 mb-3 rounded"
-                                        src="/images/banners/banner4.jpg"
+                                        className="h-40 w-full object-cover bg-gray-700 mb-3 rounded"
+                                        src={
+                                            c.imagen_destacada ||
+                                            "/images/banners/banner4.jpg"
+                                        }
+                                        alt={c.nombre_complejo}
                                     />
                                     <StarRating
-                                        rating={4.2}
-                                        totalReviews={36}
+                                        rating={c.rating_promedio}
+                                        totalReviews={c.total_reviews}
+                                        showTotal
                                     />
                                     <p className="font-semibold">
                                         {c.nombre_complejo}

@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { useEffect, useState } from "react";
-import clsx from "clsx";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useUser } from "@/context/userContext";
 import { toast, Toaster } from "sonner";
@@ -21,10 +20,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useNotifications } from "@/hooks";
-import { formatHourRange } from "@/lib/utils";
+import { sendEmail, useNotifications } from "@/hooks";
+import { formatHourRange, getReservaEmailTemplate } from "@/lib/utils";
 
 interface Props {
+    mailAdmin: string;
     idAdmin: number;
     idComplejo: number;
     idCancha: number;
@@ -33,6 +33,7 @@ interface Props {
 }
 
 export function ReservaModal({
+    mailAdmin,
     idAdmin,
     idComplejo,
     idCancha,
@@ -143,6 +144,7 @@ export function ReservaModal({
         const data = await res.json();
         if (res.ok) {
             toast.success("Reserva realizada correctamente");
+            // notificar al administrador
             try {
                 notificar({
                     titulo: "Nueva reserva",
@@ -153,6 +155,27 @@ export function ReservaModal({
                     } a las ${formatHourRange(horasSeleccionadas)}`,
                     url: "/admin/reservas",
                     destinatarios: [{ id: idAdmin, tipo: "administrador" }],
+                });
+            } catch (err) {
+                console.log(err);
+            }
+
+            // enviar notificacion por correo
+            const html = getReservaEmailTemplate({
+                titulo: "Nueva Reserva Recibida",
+                mensaje: `¡Hola! Te saludamos desde CanchApp para notificarte que ${
+                    user?.nombre
+                } ha hecho una nueva reserva en ${nombreCancha} el ${
+                    selectedDate.toISOString().split("T")[0]
+                } a las ${formatHourRange(horasSeleccionadas)}.`,
+                url: `https://canchapp.vercel.app/admin/reservas`,
+            });
+
+            try {
+                await sendEmail({
+                    to: mailAdmin,
+                    subject: "CanchApp - ¡Nueva Reserva Recibida!",
+                    html: html,
                 });
             } catch (err) {
                 console.log(err);

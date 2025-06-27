@@ -12,9 +12,13 @@ import { formatDistanceToNow, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { toast } from "sonner";
 import { useState } from "react";
-import { useNotifications } from "@/hooks";
+import { sendEmail, useNotifications } from "@/hooks";
 import { useUser } from "@/context/userContext";
-import { formatHourRange } from "@/lib/utils";
+import {
+    formatHourRange,
+    getReservaEmailTemplate,
+    reservaExpirada,
+} from "@/lib/utils";
 
 interface Props {
     show: boolean;
@@ -29,6 +33,7 @@ interface Reserva {
     telefono_complejo: string;
     nombre_cancha: string;
     id_admin: number;
+    mail_admin: string;
     fecha: string;
     horas: string[];
     nombre_equipo?: string;
@@ -58,7 +63,7 @@ export default function ReservationModal({
             // notificar al administrador
             try {
                 notificar({
-                    titulo: "Reserva cancelada",
+                    titulo: "Reserva Cancelada",
                     mensaje: `${user?.nombre} ha cancelado una reserva en ${
                         nuevaReserva?.nombre_cancha
                     } el ${nuevaReserva?.fecha} a las ${formatHourRange(
@@ -68,6 +73,28 @@ export default function ReservationModal({
                     destinatarios: [
                         { id: nuevaReserva.id_admin, tipo: "administrador" },
                     ],
+                });
+            } catch (err) {
+                console.log(err);
+            }
+            // enviar notificacion por correo
+            const html = getReservaEmailTemplate({
+                titulo: "Reserva Cancelada",
+                mensaje: `¡Hola! Te saludamos desde CanchApp para notificarte que ${
+                    user?.nombre
+                } ha cancelado una reserva en ${
+                    nuevaReserva?.nombre_cancha
+                } el ${nuevaReserva?.fecha} a las ${formatHourRange(
+                    nuevaReserva?.horas!
+                )}.`,
+                url: `https://canchapp.vercel.app/admin/reservas`,
+            });
+
+            try {
+                await sendEmail({
+                    to: nuevaReserva?.mail_admin,
+                    subject: "CanchApp - Reserva Cancelada",
+                    html: html,
                 });
             } catch (err) {
                 console.log(err);
@@ -108,11 +135,7 @@ export default function ReservationModal({
                         {nuevaReserva.telefono_complejo}
                     </p>
                     <p>
-                        <strong>Fecha:</strong>{" "}
-                        {formatDistanceToNow(parseISO(nuevaReserva.fecha), {
-                            addSuffix: true,
-                            locale: es,
-                        })}
+                        <strong>Fecha:</strong> {nuevaReserva.fecha}
                     </p>
                     <p>
                         <strong>Horas:</strong>{" "}
@@ -133,15 +156,16 @@ export default function ReservationModal({
                 </div>
 
                 <DialogFooter className="mt-4">
-                    {!nuevaReserva.is_active ? null : (
-                        <Button
-                            onClick={cancelarReserva}
-                            className="bg-red-600 hover:bg-red-700 text-white"
-                            disabled={loading}
-                        >
-                            {loading ? "Cancelando..." : "Cancelar Reserva"}
-                        </Button>
-                    )}
+                    {nuevaReserva.is_active &&
+                        !reservaExpirada(nuevaReserva) && (
+                            <Button
+                                onClick={cancelarReserva}
+                                className="cursor-pointer bg-red-600 hover:bg-red-700 text-white"
+                                disabled={loading}
+                            >
+                                {loading ? "Cancelando..." : "Cancelar Reserva"}
+                            </Button>
+                        )}
                 </DialogFooter>
             </DialogContent>
         </Dialog>

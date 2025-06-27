@@ -105,8 +105,6 @@ const initialAdminData: AdminFormState = {
 };
 
 export default function RegisterPage() {
-    const { notificar } = useNotifications();
-
     const [jugador, setJugador] = useState<JugadorState>(initialJugadorData);
     const [admin, setAdmin] = useState<AdminFormState>(initialAdminData);
     const [errors, setErrors] = useState<Record<string, boolean>>({});

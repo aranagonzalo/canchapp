@@ -97,7 +97,7 @@ export default function ReviewsModal({
                     value={comentario}
                     onChange={(e) => setComentario(e.target.value)}
                     placeholder="Escribe un comentario (opcional)"
-                    className="bg-[#0f172a] border-gray-600 text-white mb-4"
+                    className=" border-gray-800 text-white mb-4"
                 />
 
                 <DialogFooter>

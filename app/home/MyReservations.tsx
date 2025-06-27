@@ -1,24 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-    Table,
-    TableHeader,
-    TableBody,
-    TableRow,
-    TableHead,
-    TableCell,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useUser } from "@/context/userContext";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import ReservationsModal from "./ReservationsModal";
-import { formatHourRange, formatPhoneForWhatsApp } from "@/lib/utils";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import ReservationModal from "./ReservationsModal";
-import { useNotifications } from "@/hooks";
+import { reservaExpirada } from "@/lib/utils";
 
 interface Reserva {
     nombre_complejo: string;
@@ -26,6 +15,7 @@ interface Reserva {
     telefono_complejo: string;
     nombre_cancha: string;
     id_admin: number;
+    mail_admin: string;
     fecha: string;
     horas: string[];
     nombre_equipo?: string;
@@ -40,7 +30,6 @@ export default function MisReservas() {
 
     const [reservas, setReservas] = useState<Reserva[]>([]);
     const [loading, setLoading] = useState(true);
-    const [eliminandoId, setEliminandoId] = useState<number | null>(null);
 
     const [showModal, setShowModal] = useState(false);
     const [reservaActiva, setReservaActiva] = useState<Reserva | null>(null);
@@ -55,24 +44,6 @@ export default function MisReservas() {
             toast.error("Error al obtener reservas.");
         } finally {
             setLoading(false);
-        }
-    };
-
-    const eliminarReserva = async (id: number) => {
-        setEliminandoId(id);
-        try {
-            const res = await fetch(`/api/reservations/delete`, {
-                method: "DELETE",
-                body: JSON.stringify({ id }),
-            });
-
-            if (!res.ok) throw new Error("Falló la eliminación");
-            toast.success("Reserva eliminada");
-            await fetchReservas();
-        } catch (err) {
-            toast.error("No se pudo eliminar la reserva.");
-        } finally {
-            setEliminandoId(null);
         }
     };
 
@@ -123,14 +94,18 @@ export default function MisReservas() {
                                 >
                                     <div
                                         className={`self-end px-3 py-1 rounded-full text-xs font-medium text-white absolute top-3 right-3
-                                            ${
-                                                reserva.is_active
-                                                    ? "bg-custom-dark-green"
-                                                    : "bg-gray-500"
-                                            }`}
+                                        ${
+                                            reserva.is_active
+                                                ? reservaExpirada(reserva)
+                                                    ? "bg-yellow-600"
+                                                    : "bg-custom-dark-green"
+                                                : "bg-gray-500"
+                                        }`}
                                     >
                                         {reserva.is_active
-                                            ? "Activa"
+                                            ? reservaExpirada(reserva)
+                                                ? "Finalizada"
+                                                : "Activa"
                                             : "Cancelada"}
                                     </div>
                                     <h3 className="text-lg font-semibold text-white mb-2">

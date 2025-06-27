@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import Image from "next/image";
 
 export default function CrearCanchaModal({
     onClose,
@@ -32,21 +33,33 @@ export default function CrearCanchaModal({
     const [techo, setTecho] = useState(false);
     const [precio, setPrecio] = useState("");
     const [jugadores, setJugadores] = useState("");
+    const [imagen, setImagen] = useState<File | null>(null);
+    const [preview, setPreview] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImagen(file);
+            setPreview(URL.createObjectURL(file));
+        }
+    };
 
     const handleCreate = async () => {
         setLoading(true);
+        const formData = new FormData();
+        formData.append("nombre_cancha", nombre);
+        formData.append("techo", techo.toString());
+        formData.append("precio_turno", precio);
+        formData.append("cant_jugador", jugadores);
+        formData.append("id_complejo", idComplejo.toString());
+        if (imagen) formData.append("imagen", imagen);
+
         await fetch(`/api/admin/canchas/create`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                nombre_cancha: nombre,
-                techo,
-                precio_turno: Number(precio),
-                cant_jugador: Number(jugadores),
-                id_complejo: idComplejo,
-            }),
+            body: formData,
         });
+
         onCreated();
         setLoading(false);
         onClose();
@@ -91,6 +104,26 @@ export default function CrearCanchaModal({
                         onChange={(e) => setPrecio(e.target.value)}
                         type="number"
                     />
+
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm text-gray-300">
+                            Subir imagen de la cancha
+                        </label>
+                        <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                        />
+                        {preview && (
+                            <Image
+                                src={preview}
+                                alt="Preview"
+                                width={300}
+                                height={180}
+                                className="rounded-lg object-cover mt-2"
+                            />
+                        )}
+                    </div>
 
                     <div className="flex justify-end gap-2">
                         <Button

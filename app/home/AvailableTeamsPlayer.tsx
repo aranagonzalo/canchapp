@@ -95,9 +95,10 @@ export default function EquiposDisponibles({
     };
 
     const cancelarSolicitud = async (equipoId: number) => {
+        setLoadingSolicitudId(equipoId);
         try {
             const res = await fetch(
-                `/api/requests/delete/${id_jugador}/${equipoId}`,
+                `/api/requests/delete?id_jugador=${id_jugador}&id_equipo=${equipoId}`,
                 {
                     method: "DELETE",
                 }
@@ -125,6 +126,8 @@ export default function EquiposDisponibles({
         } catch (error) {
             console.error(error);
             toast.error("Error de red al cancelar solicitud");
+        } finally {
+            setLoadingSolicitudId(null);
         }
     };
 
@@ -210,14 +213,23 @@ export default function EquiposDisponibles({
                                 "Ya perteneces a este equipo" ? (
                                     <span>Ya perteneces a este equipo</span>
                                 ) : equipo.estado === "Pendiente" ? (
-                                    <button
-                                        onClick={() =>
-                                            cancelarSolicitud(equipo.id_equipo)
-                                        }
-                                        className="text-white bg-gradient-to-r from-rose-600 to-rose-500 px-2 py-1 rounded font-medium text-xs cursor-pointer hover:from-rose-700 hover:to-rose-600"
-                                    >
-                                        Cancelar solicitud
-                                    </button>
+                                    <>
+                                        {loadingSolicitudId ===
+                                        equipo.id_equipo ? (
+                                            <LoadingSpinner />
+                                        ) : (
+                                            <button
+                                                onClick={() =>
+                                                    cancelarSolicitud(
+                                                        equipo.id_equipo
+                                                    )
+                                                }
+                                                className="text-white bg-gradient-to-r from-rose-600 to-rose-500 px-2 py-1 rounded font-medium text-xs cursor-pointer hover:from-rose-700 hover:to-rose-600"
+                                            >
+                                                Cancelar solicitud
+                                            </button>
+                                        )}
+                                    </>
                                 ) : equipo.estado === "No enviado" ||
                                   equipo.estado === "Rechazado" ? (
                                     <>

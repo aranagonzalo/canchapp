@@ -12,7 +12,20 @@ export async function GET(
         const { data: complejo, error: errorComplejo } = await db
             .from("complejo")
             .select(
-                "id_admin, id_complejo, nombre_complejo, direccion, telefono, ciudad, descripcion, latitud, longitud"
+                `
+                id_admin,
+                id_complejo,
+                nombre_complejo,
+                direccion,
+                telefono,
+                ciudad,
+                descripcion,
+                latitud,
+                longitud,
+                administrador:administrador (
+                    mail
+                )
+                `
             )
             .eq("id_complejo", id)
             .single();
@@ -39,25 +52,27 @@ export async function GET(
             );
         }
 
-        // 3. Obtener promedio y cantidad de reseñas
-        const { data: stats, error: errorReviews } = await db
+        // 3. Obtener promedio y cantidad de reseñas (más eficiente)
+        const { data: reviewStats, error: errorReviews } = await db
             .from("reviews_complejo")
-            .select("puntuacion", { count: "exact" })
+            .select("puntuacion")
             .eq("id_complejo", id);
 
         if (errorReviews) {
-            return NextResponse.json(
-                { Status: "Error al obtener reseñas" },
-                { status: 500 }
-            );
+            return NextResponse.json({ Status: errorReviews }, { status: 500 });
         }
 
-        const total_reviews = stats.length;
-        const avg_rating =
-            total_reviews > 0
-                ? stats.reduce((sum, r) => sum + r.puntuacion, 0) /
-                  total_reviews
-                : null;
+        const total_reviews = reviewStats.length;
+        const avg_rating = total_reviews
+            ? Number(
+                  (
+                      reviewStats.reduce(
+                          (sum: number, r: any) => sum + (r.puntuacion || 0),
+                          0
+                      ) / total_reviews
+                  ).toFixed(1)
+              )
+            : 0.0;
 
         // 4. Obtener horarios del complejo
         const { data: horarios, error: errorHorarios } = await db
@@ -81,10 +96,9 @@ export async function GET(
             tiene_horario_operativo,
             reviews_stats: {
                 total_reviews,
-                avg_rating: avg_rating
-                    ? parseFloat(avg_rating.toFixed(1))
-                    : null,
+                avg_rating,
             },
+            reviewStats,
         });
     } catch (err) {
         console.error("Error inesperado:", err);

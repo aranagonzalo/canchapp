@@ -5,6 +5,20 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
+interface Reserva {
+    nombre_complejo: string;
+    direccion_complejo: string;
+    telefono_complejo: string;
+    nombre_cancha: string;
+    id_admin: number;
+    mail_admin: string;
+    fecha: string;
+    horas: string[];
+    nombre_equipo?: string;
+    id: number;
+    is_active: boolean;
+}
+
 export function getRelativeTime(dateStr: string): string {
     const date = new Date(dateStr);
     const now = new Date();
@@ -72,4 +86,61 @@ export function formatPhoneForWhatsApp(raw: string): string {
 
     // Por defecto, se asume Argentina
     return `+54${cleaned}`;
+}
+
+export function reservaExpirada(reserva: Reserva) {
+    const ahora = new Date();
+
+    const fechaReserva = new Date(reserva.fecha);
+    const ultimaHora = Math.max(...reserva.horas.map(Number));
+
+    if (fechaReserva < new Date(ahora.toDateString())) {
+        // Si la fecha ya pasó
+        return true;
+    }
+
+    if (fechaReserva.toDateString() === ahora.toDateString()) {
+        const horaActual = ahora.getHours();
+        if (ultimaHora < horaActual) {
+            // Si es hoy y la última hora ya pasó
+            return true;
+        }
+    }
+
+    return false;
+}
+
+//PLANTILLAS DE CORREOS:
+
+export function getReservaEmailTemplate({
+    titulo,
+    mensaje,
+    url,
+}: {
+    titulo: string;
+    mensaje: string;
+    url: string;
+}): string {
+    return `
+      <div style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 24px;">
+        <div style="max-width: 600px; margin: auto; background: white; border-radius: 8px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+          <h2 style="color: #22c55e; margin-bottom: 16px;">${titulo}</h2>
+          <p style="color: #333333; font-size: 16px; line-height: 1.5;">
+            ${mensaje}
+          </p>
+          <div style="text-align: center; margin-top: 32px;">
+          <p style="color: #333333; font-size: 16px; line-height: 1.5;">
+            Haz click en el link a continuación para ver tus reserva:
+          </p>
+            <a href="${url}" target="_blank" 
+               style="background-color: #22c55e; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold;">
+              Ver reservas
+            </a>
+          </div>
+          <p style="margin-top: 40px; font-size: 12px; color: #888; text-align: center;">
+            Este es un mensaje automático de CanchApp. Por favor no respondas este correo.
+          </p>
+        </div>
+      </div>
+    `;
 }

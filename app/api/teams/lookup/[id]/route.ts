@@ -10,9 +10,13 @@ export async function GET(
     const id_jugador = parseInt((await params).id);
 
     try {
-        const { data: equipos, error: errorEquipos } = await db
-            .from("equipo")
-            .select("*");
+        const { data: equipos, error: errorEquipos } = await db.from("equipo")
+            .select(`
+                *,
+                mail_capitan:jugador (
+                mail
+                )
+            `);
 
         if (errorEquipos || !equipos) {
             return NextResponse.json(

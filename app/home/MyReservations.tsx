@@ -93,7 +93,7 @@ export default function MisReservas() {
                                     }`}
                                 >
                                     <div
-                                        className={`self-end px-3 py-1 rounded-full text-xs font-medium text-white absolute top-3 right-3
+                                        className={`self-end px-3 py-1 rounded-full text-xs font-medium text-white absolute top-3 left-3
                                         ${
                                             reserva.is_active
                                                 ? reservaExpirada(reserva)
@@ -108,7 +108,7 @@ export default function MisReservas() {
                                                 : "Activa"
                                             : "Cancelada"}
                                     </div>
-                                    <h3 className="text-lg font-semibold text-white mb-2">
+                                    <h3 className="text-lg font-semibold text-white mb-2 mt-7">
                                         {reserva.nombre_complejo}
                                     </h3>
                                     <p className="text-sm text-gray-300 mb-1">

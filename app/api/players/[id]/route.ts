@@ -33,7 +33,7 @@ export async function GET(
     const { data: jugadores, error } = await db
         .from("jugador")
         .select(
-            "id_jug, nombre, apellido, fecha_nac, telefono, posicion, pierna_habil, sexo"
+            "id_jug, nombre, apellido, fecha_nac, telefono,mail, posicion, pierna_habil, sexo"
         );
 
     if (error) {

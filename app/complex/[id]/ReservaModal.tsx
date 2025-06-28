@@ -20,7 +20,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { sendEmail, useNotifications } from "@/hooks";
+import { useNotifications } from "@/hooks";
+import { sendEmail } from "@/hooks/sendEmail";
 import { formatHourRange, getReservaEmailTemplate } from "@/lib/utils";
 
 interface Props {

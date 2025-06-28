@@ -122,7 +122,7 @@ const LoginPage = () => {
                                     Contraseña
                                 </label>
                                 <a
-                                    href="#"
+                                    href="/forgot-password"
                                     className="text-sm text-custom-green hover:underline"
                                 >
                                     ¿Olvidaste tu contraseña?

@@ -24,12 +24,13 @@ import { useUser } from "@/context/userContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import EquiposDisponiblesModal, { Equipo } from "./EquiposDisponiblesModal";
 
-interface Jugador {
+export interface Jugador {
     id_jug: number;
     nombre: string;
     apellido: string;
     edad: number;
     telefono: string;
+    mail: string;
     posicion: string;
     pierna_habil: string;
     sexo: string;
@@ -51,7 +52,7 @@ export default function Players() {
         { label: "18+", value: "18+" },
     ];
     const [modalOpen, setModalOpen] = useState(false);
-    const [jugadorIdActivo, setJugadorIdActivo] = useState<number | null>(null);
+    const [jugadorActivo, setJugadorActivo] = useState<Jugador | null>(null);
     const [modalEquipos, setModalEquipos] = useState<Equipo[]>([]);
     const [loadingJugadorId, setLoadingJugadorId] = useState<number | null>(
         null
@@ -111,12 +112,12 @@ export default function Players() {
         ...new Set(jugadores.map((j) => j[key]).filter(Boolean)),
     ];
 
-    const handleVerSolicitud = async (idJugador: number) => {
+    const handleVerSolicitud = async (jugador: Jugador) => {
         if (!userId) return;
-        setLoadingJugadorId(idJugador);
+        setLoadingJugadorId(jugador.id_jug);
         try {
             const res = await fetch(
-                `/api/teams-invite?id_jugador=${idJugador}&id_capitan=${userId}`
+                `/api/teams-invite?id_jugador=${jugador.id_jug}&id_capitan=${userId}`
             );
             const data = await res.json();
 
@@ -128,7 +129,7 @@ export default function Players() {
             }
 
             setModalEquipos(data);
-            setJugadorIdActivo(idJugador);
+            setJugadorActivo(jugador);
             setModalOpen(true);
         } catch (err) {
             toast.error("Error al consultar equipos.");
@@ -140,14 +141,14 @@ export default function Players() {
     return (
         <div>
             <Toaster richColors position="top-right" />
-            {modalOpen && jugadorIdActivo !== null && (
+            {modalOpen && jugadorActivo !== null && (
                 <EquiposDisponiblesModal
                     open={modalOpen}
                     onClose={() => setModalOpen(false)}
                     equipos={modalEquipos}
-                    id_jugador={jugadorIdActivo}
+                    jugador={jugadorActivo}
                     id_capitan={userId!}
-                    refetchEquipos={() => handleVerSolicitud(jugadorIdActivo)}
+                    refetchEquipos={() => handleVerSolicitud(jugadorActivo)}
                 />
             )}
 
@@ -326,7 +327,7 @@ export default function Players() {
                                     <Button
                                         className="bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 font-medium rounded cursor-pointer text-xs"
                                         onClick={() =>
-                                            handleVerSolicitud(jugador.id_jug)
+                                            handleVerSolicitud(jugador)
                                         }
                                         disabled={
                                             loadingJugadorId === jugador.id_jug
@@ -337,7 +338,7 @@ export default function Players() {
                                                 <LoadingSpinner />
                                             </div>
                                         ) : (
-                                            "Ver solicitud"
+                                            "Invitar"
                                         )}
                                     </Button>
                                 </TableCell>

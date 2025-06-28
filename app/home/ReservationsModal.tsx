@@ -8,14 +8,14 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { formatDistanceToNow, parseISO } from "date-fns";
-import { es } from "date-fns/locale";
 import { toast } from "sonner";
 import { useState } from "react";
-import { sendEmail, useNotifications } from "@/hooks";
+import { useNotifications } from "@/hooks";
+import { sendEmail } from "@/hooks/sendEmail";
 import { useUser } from "@/context/userContext";
 import {
     formatHourRange,
+    formatPhoneForWhatsApp,
     getReservaEmailTemplate,
     reservaExpirada,
 } from "@/lib/utils";
@@ -155,7 +155,21 @@ export default function ReservationModal({
                     </p>
                 </div>
 
-                <DialogFooter className="mt-4">
+                <DialogFooter className="mt-4 items-center flex gap-3">
+                    {nuevaReserva.is_active &&
+                        !reservaExpirada(nuevaReserva) && (
+                            <a
+                                href={`https://wa.me/${formatPhoneForWhatsApp(
+                                    nuevaReserva.telefono_complejo
+                                )}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-fit font-medium flex gap-2 bg-[#1b8d4a] hover:bg-[#007933] justify-center items-center text-white px-2.5 py-2 rounded-md text-[13px] tracking-normal transition"
+                            >
+                                <img src="/whatsapp.png" className="w-5 h-5" />{" "}
+                                Contactar por WhatsApp
+                            </a>
+                        )}
                     {nuevaReserva.is_active &&
                         !reservaExpirada(nuevaReserva) && (
                             <Button

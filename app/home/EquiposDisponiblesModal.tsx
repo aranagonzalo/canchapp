@@ -21,6 +21,10 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { toast } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { Jugador } from "./Players";
+import { getSolicitudEmailTemplate } from "@/lib/utils";
+import { useNotifications } from "@/hooks";
+import { sendEmail } from "@/hooks/sendEmail";
 
 export interface Equipo {
     id_equipo: number;
@@ -35,7 +39,7 @@ interface EquiposDisponiblesModalProps {
     open: boolean;
     onClose: () => void;
     equipos: Equipo[];
-    id_jugador: number;
+    jugador: Jugador;
     id_capitan: number;
     refetchEquipos: () => void;
 }
@@ -44,11 +48,12 @@ export default function EquiposDisponiblesModal({
     open,
     onClose,
     equipos,
-    id_jugador,
+    jugador,
     id_capitan,
     refetchEquipos,
 }: EquiposDisponiblesModalProps) {
     const [loadingId, setLoadingId] = useState<number | null>(null);
+    const { notificar } = useNotifications();
 
     const handleEnviarInvitacion = async (equipo: Equipo) => {
         setLoadingId(equipo.id_equipo);
@@ -57,11 +62,44 @@ export default function EquiposDisponiblesModal({
             if (equipo.estado === "Pendiente") {
                 // Lógica de CANCELAR invitación
                 const res = await fetch(
-                    `/api/invitations/delete?id_jugador=${id_jugador}&id_equipo=${equipo.id_equipo}`,
+                    `/api/invitations/delete?id_jugador=${jugador.id_jug}&id_equipo=${equipo.id_equipo}`,
                     { method: "DELETE" }
                 );
 
                 const result = await res.json();
+                if (res.ok) {
+                    // notificar al jugador que se le ha cancelado una invitacion
+                    try {
+                        notificar({
+                            titulo: "Cancelación de invitación",
+                            mensaje: `El capitán del equipo: "${equipo.nombre_equipo}" ha cancelado la invitación para que te sumes a su equipo.`,
+                            url: "/home?tab=solicitudes",
+                            destinatarios: [
+                                { id: jugador.id_jug, tipo: "jugador" },
+                            ],
+                        });
+                    } catch (err) {
+                        console.log(err);
+                    }
+
+                    // enviar notificacion por correo
+                    const html = getSolicitudEmailTemplate({
+                        titulo: "Cancelación de invitación",
+                        mensaje: `¡Hola! Te saludamos desde CanchApp para notificarte que el capitán del equipo: "${equipo.nombre_equipo}" ha cancelado la invitación para que te sumes a su equipo.`,
+                        url: `https://canchapp.vercel.app/home?tab=solicitudes`,
+                    });
+
+                    try {
+                        await sendEmail({
+                            to: jugador.mail,
+                            subject:
+                                "CanchApp - Cancelación de invitación a equipo",
+                            html: html,
+                        });
+                    } catch (err) {
+                        console.log(err);
+                    }
+                }
                 toast.success(result.message || "Invitación cancelada");
             } else {
                 // Lógica de ENVIAR invitación
@@ -69,13 +107,45 @@ export default function EquiposDisponiblesModal({
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        id_jugador,
+                        id_jugador: jugador.id_jug,
                         id_equipo: equipo.id_equipo,
                         id_capitan,
                     }),
                 });
 
                 const result = await res.json();
+                if (res.ok) {
+                    // notificar al jugador que se le ha invitado a unirse a un equipo
+                    try {
+                        notificar({
+                            titulo: "Nueva invitación a equipo",
+                            mensaje: `El capitán del equipo: "${equipo.nombre_equipo}" te ha invitado a que te sumes a su equipo.`,
+                            url: "/home?tab=solicitudes",
+                            destinatarios: [
+                                { id: jugador.id_jug, tipo: "jugador" },
+                            ],
+                        });
+                    } catch (err) {
+                        console.log(err);
+                    }
+
+                    // enviar notificacion por correo
+                    const html = getSolicitudEmailTemplate({
+                        titulo: "Nueva invitación a equipo",
+                        mensaje: `¡Hola! Te saludamos desde CanchApp para notificarte que el capitán del equipo: "${equipo.nombre_equipo}" te ha invitado a que te sumes a su equipo.`,
+                        url: `https://canchapp.vercel.app/home?tab=solicitudes`,
+                    });
+
+                    try {
+                        await sendEmail({
+                            to: jugador.mail,
+                            subject: "CanchApp - Nueva invitación a equipo",
+                            html: html,
+                        });
+                    } catch (err) {
+                        console.log(err);
+                    }
+                }
                 toast.success(result.message || "Invitación enviada");
             }
 
@@ -98,7 +168,8 @@ export default function EquiposDisponiblesModal({
                         Equipos Disponibles
                     </DialogTitle>
                     <DialogDescription className="text-gray-400">
-                        Información detallada de tus equipos.
+                        Elige alguno de tus equipos para invitar al jugador
+                        seleccionado.
                     </DialogDescription>
                 </DialogHeader>
 

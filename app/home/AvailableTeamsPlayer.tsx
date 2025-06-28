@@ -14,15 +14,24 @@ import { toast } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Eye } from "lucide-react";
 import PlayerListModal from "./PlayerListModal";
+import { useNotifications } from "@/hooks";
+import { sendEmail } from "@/hooks/sendEmail";
+import { useUser } from "@/context/userContext";
+import { getSolicitudEmailTemplate } from "@/lib/utils";
 
 type Equipo = {
     id_equipo: number;
+    id_jugadores: number[];
     nombre_equipo: string;
     cant_max: number;
     cant_jugadores: number;
+    proximo_partido: string | null;
+    publico: boolean;
     ubicacion: string;
     estado: string;
     solicitud: string;
+    mail_capitan: { mail: string };
+    capitan: number;
 };
 
 export default function EquiposDisponibles({
@@ -30,6 +39,8 @@ export default function EquiposDisponibles({
 }: {
     id_jugador: number;
 }) {
+    const { user } = useUser();
+    const { notificar } = useNotifications();
     const [filtroNombre, setFiltroNombre] = useState("");
     const [equipos, setEquipos] = useState<Equipo[]>([]);
     const [loading, setLoading] = useState(true);
@@ -59,13 +70,16 @@ export default function EquiposDisponibles({
         }
     };
 
-    const enviarSolicitud = async (equipoId: number) => {
-        setLoadingSolicitudId(equipoId);
+    const enviarSolicitud = async (equipo: Equipo) => {
+        setLoadingSolicitudId(equipo.id_equipo);
         try {
             const res = await fetch("/api/requests/create", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id_jugador, id_equipo: equipoId }),
+                body: JSON.stringify({
+                    id_jugador,
+                    id_equipo: equipo.id_equipo,
+                }),
             });
 
             const data = await res.json();
@@ -74,7 +88,7 @@ export default function EquiposDisponibles({
                 toast.success(data.message || "Solicitud enviada");
                 setEquipos((prev) =>
                     prev.map((eq) =>
-                        eq.id_equipo === equipoId
+                        eq.id_equipo === equipo.id_equipo
                             ? {
                                   ...eq,
                                   estado: "Pendiente",
@@ -83,6 +97,36 @@ export default function EquiposDisponibles({
                             : eq
                     )
                 );
+                // notificar al capitan (otro jugador) del equipo
+                try {
+                    notificar({
+                        titulo: "Solicitud de nuevo jugador",
+                        mensaje: `El jugador: ${user?.nombre} ha solicitado sumarse a tu equipo "${equipo.nombre_equipo}".`,
+                        url: "/home?tab=solicitudes",
+                        destinatarios: [
+                            { id: equipo.capitan, tipo: "jugador" },
+                        ],
+                    });
+                } catch (err) {
+                    console.log(err);
+                }
+
+                // enviar notificacion por correo
+                const html = getSolicitudEmailTemplate({
+                    titulo: "Nueva Reserva Recibida",
+                    mensaje: `¡Hola! Te saludamos desde CanchApp para notificarte que el jugador: ${user?.nombre} ha solicitado sumarse a tu equipo "${equipo.nombre_equipo}".`,
+                    url: `https://canchapp.vercel.app/home?tab=solicitudes`,
+                });
+
+                try {
+                    await sendEmail({
+                        to: equipo.mail_capitan.mail,
+                        subject: "CanchApp - Solicitud de nuevo jugador",
+                        html: html,
+                    });
+                } catch (err) {
+                    console.log(err);
+                }
             } else {
                 toast.error(data.message || "No se pudo enviar la solicitud");
             }
@@ -94,11 +138,11 @@ export default function EquiposDisponibles({
         }
     };
 
-    const cancelarSolicitud = async (equipoId: number) => {
-        setLoadingSolicitudId(equipoId);
+    const cancelarSolicitud = async (equipo: Equipo) => {
+        setLoadingSolicitudId(equipo.id_equipo);
         try {
             const res = await fetch(
-                `/api/requests/delete?id_jugador=${id_jugador}&id_equipo=${equipoId}`,
+                `/api/requests/delete?id_jugador=${id_jugador}&id_equipo=${equipo.id_equipo}`,
                 {
                     method: "DELETE",
                 }
@@ -114,7 +158,7 @@ export default function EquiposDisponibles({
             toast.success("Solicitud cancelada");
             setEquipos((prev) =>
                 prev.map((eq) =>
-                    eq.id_equipo === equipoId
+                    eq.id_equipo === equipo.id_equipo
                         ? {
                               ...eq,
                               estado: "No enviado",
@@ -123,6 +167,34 @@ export default function EquiposDisponibles({
                         : eq
                 )
             );
+            // notificar al capitan (otro jugador) del equipo
+            try {
+                notificar({
+                    titulo: "Cancelación de solicitud",
+                    mensaje: `El jugador: ${user?.nombre} ha cancelado la solicitud para sumarse a tu equipo "${equipo.nombre_equipo}".`,
+                    url: "/home?tab=solicitudes",
+                    destinatarios: [{ id: equipo.capitan, tipo: "jugador" }],
+                });
+            } catch (err) {
+                console.log(err);
+            }
+
+            // enviar notificacion por correo
+            const html = getSolicitudEmailTemplate({
+                titulo: "Cancelación de solicitud",
+                mensaje: `¡Hola! Te saludamos desde CanchApp para notificarte que el jugador: ${user?.nombre} ha cancelado la solicitud para sumarse a tu equipo "${equipo.nombre_equipo}".`,
+                url: `https://canchapp.vercel.app/home?tab=solicitudes`,
+            });
+
+            try {
+                await sendEmail({
+                    to: equipo.mail_capitan.mail,
+                    subject: "CanchApp - Cancelación de solicitud de jugador",
+                    html: html,
+                });
+            } catch (err) {
+                console.log(err);
+            }
         } catch (error) {
             console.error(error);
             toast.error("Error de red al cancelar solicitud");
@@ -220,9 +292,7 @@ export default function EquiposDisponibles({
                                         ) : (
                                             <button
                                                 onClick={() =>
-                                                    cancelarSolicitud(
-                                                        equipo.id_equipo
-                                                    )
+                                                    cancelarSolicitud(equipo)
                                                 }
                                                 className="text-white bg-gradient-to-r from-rose-600 to-rose-500 px-2 py-1 rounded font-medium text-xs cursor-pointer hover:from-rose-700 hover:to-rose-600"
                                             >
@@ -239,9 +309,7 @@ export default function EquiposDisponibles({
                                         ) : (
                                             <button
                                                 onClick={() =>
-                                                    enviarSolicitud(
-                                                        equipo.id_equipo
-                                                    )
+                                                    enviarSolicitud(equipo)
                                                 }
                                                 className="text-white bg-gradient-to-r from-custom-dark-green to-custom-green px-2 py-1 rounded font-medium text-xs cursor-pointer hover:from-emerald-700 hover:to-emerald-600"
                                             >

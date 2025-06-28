@@ -11,6 +11,8 @@ const publicRoutes = [
     "/reset-password",
     "/terms",
     "/privacy",
+    "/reset-password",
+    "/forgot-password",
 ];
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {

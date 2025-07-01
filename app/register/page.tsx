@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { CalendarIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast, Toaster } from "sonner";
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Calendar as DatePicker } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format, getMonth, getYear, setMonth } from "date-fns";
 import {
     Popover,
     PopoverContent,
@@ -27,6 +27,7 @@ import { useUser } from "@/context/userContext";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useNotifications } from "@/hooks";
+import HourSelect from "../admin/complex/HourSelect";
 
 // Tipado
 
@@ -120,6 +121,30 @@ export default function RegisterPage() {
         { dia: 6, apertura: "09:00", cierre: "20:00", activo: false },
         { dia: 0, apertura: "09:00", cierre: "20:00", activo: false },
     ]);
+    const [open, setOpen] = useState(false);
+
+    const startYear = useMemo(() => getYear(new Date()) - 100, []);
+    const endYear = useMemo(() => getYear(new Date()), []);
+
+    const [date, setDate] = useState<Date>(new Date());
+    const months = [
+        "Enero",
+        "Febrero",
+        "Marzo",
+        "Abril",
+        "Mayo",
+        "Junio",
+        "Julio",
+        "Agosto",
+        "Septiembre",
+        "Octubre",
+        "Noviembre",
+        "Diciembre",
+    ];
+
+    const years = Array.from({ length: endYear - startYear + 1 }, (_, i) =>
+        String(startYear + i)
+    );
 
     const router = useRouter();
     const { login } = useUser();
@@ -266,6 +291,20 @@ export default function RegisterPage() {
         setLoading(false);
     };
 
+    const handleMonthChange = (month: string) => {
+        console.log(month);
+        if (!date) return;
+        const newDate = setMonth(date, months.indexOf(month));
+        setDate(newDate);
+    };
+
+    const handleYearChange = (year: string) => {
+        if (!date) return;
+        const newDate = new Date(date);
+        newDate.setFullYear(Number(year));
+        setDate(newDate);
+    };
+
     return (
         <>
             <Toaster richColors position="top-right" />
@@ -405,7 +444,10 @@ export default function RegisterPage() {
                                                     <Label className="text-white mb-1.5">
                                                         {labelMap[field]}
                                                     </Label>
-                                                    <Popover>
+                                                    <Popover
+                                                        open={open}
+                                                        onOpenChange={setOpen}
+                                                    >
                                                         <PopoverTrigger asChild>
                                                             <button
                                                                 className={cn(
@@ -421,7 +463,7 @@ export default function RegisterPage() {
                                                                 {value
                                                                     ? format(
                                                                           new Date(
-                                                                              value
+                                                                              date
                                                                           ),
                                                                           "dd/MM/yyyy",
                                                                           {
@@ -433,38 +475,123 @@ export default function RegisterPage() {
                                                             </button>
                                                         </PopoverTrigger>
                                                         <PopoverContent className="w-auto p-0 bg-[#0b1120] text-white border border-slate-700 overflow-hidden">
+                                                            <div className="flex justify-between px-3 pt-3">
+                                                                <Select
+                                                                    onValueChange={
+                                                                        handleMonthChange
+                                                                    }
+                                                                    value={
+                                                                        months[
+                                                                            getMonth(
+                                                                                date
+                                                                            )
+                                                                        ]
+                                                                    }
+                                                                >
+                                                                    <SelectTrigger className="w-[110px] border-slate-700">
+                                                                        <SelectValue placeholder="Mes" />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        {months.map(
+                                                                            (
+                                                                                month
+                                                                            ) => (
+                                                                                <SelectItem
+                                                                                    value={
+                                                                                        month
+                                                                                    }
+                                                                                    key={
+                                                                                        month
+                                                                                    }
+                                                                                >
+                                                                                    {
+                                                                                        month
+                                                                                    }
+                                                                                </SelectItem>
+                                                                            )
+                                                                        )}
+                                                                    </SelectContent>
+                                                                </Select>
+                                                                <Select
+                                                                    onValueChange={(
+                                                                        value
+                                                                    ) =>
+                                                                        handleYearChange(
+                                                                            value
+                                                                        )
+                                                                    }
+                                                                    value={years.find(
+                                                                        (y) =>
+                                                                            y ===
+                                                                            getYear(
+                                                                                date
+                                                                            ).toString()
+                                                                    )}
+                                                                >
+                                                                    <SelectTrigger className="text-white w-[110px] border-slate-700">
+                                                                        <SelectValue placeholder="Año" />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        {years.map(
+                                                                            (
+                                                                                year
+                                                                            ) => (
+                                                                                <SelectItem
+                                                                                    value={year.toString()}
+                                                                                    key={
+                                                                                        year
+                                                                                    }
+                                                                                >
+                                                                                    {
+                                                                                        year
+                                                                                    }
+                                                                                </SelectItem>
+                                                                            )
+                                                                        )}
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            </div>
                                                             <DatePicker
                                                                 mode="single"
-                                                                selected={
-                                                                    selectedDate
-                                                                        ? new Date(
-                                                                              selectedDate +
-                                                                                  "T00:00:00"
-                                                                          )
-                                                                        : undefined
-                                                                }
+                                                                month={date}
+                                                                selected={date}
                                                                 onSelect={(
-                                                                    date
-                                                                ) =>
-                                                                    setJugador(
-                                                                        (
-                                                                            prev
-                                                                        ) => ({
-                                                                            ...prev,
-                                                                            fecha_nac:
-                                                                                date
-                                                                                    ? date
-                                                                                          .toISOString()
-                                                                                          .split(
-                                                                                              "T"
-                                                                                          )[0]
-                                                                                    : "",
-                                                                        })
-                                                                    )
-                                                                }
+                                                                    selected
+                                                                ) => {
+                                                                    if (
+                                                                        selected
+                                                                    ) {
+                                                                        setDate(
+                                                                            selected
+                                                                        );
+                                                                        setJugador(
+                                                                            (
+                                                                                prev
+                                                                            ) => ({
+                                                                                ...prev,
+                                                                                fecha_nac:
+                                                                                    selected
+                                                                                        ? format(
+                                                                                              selected,
+                                                                                              "yyyy-MM-dd"
+                                                                                          )
+                                                                                        : "",
+                                                                            })
+                                                                        );
+                                                                        setOpen(
+                                                                            false
+                                                                        );
+                                                                    }
+                                                                }}
                                                                 locale={es}
                                                                 showOutsideDays
                                                                 className="bg-[#0b1120] text-white"
+                                                                defaultMonth={
+                                                                    date
+                                                                }
+                                                                disableNavigation={
+                                                                    false
+                                                                }
                                                             />
                                                         </PopoverContent>
                                                     </Popover>
@@ -622,91 +749,77 @@ export default function RegisterPage() {
                             <h3 className="text-white text-lg font-semibold mt-6 mb-2">
                                 Horarios de Atención
                             </h3>
-                            <div className="grid gap-4">
-                                {diasSemana.map(({ nombre, index }) => {
-                                    const horario = horarios.find(
-                                        (h) => h.dia === index
-                                    );
-                                    if (!horario) return null;
-                                    return (
-                                        <div
-                                            key={index}
-                                            className="flex items-center gap-4"
-                                        >
-                                            <Label className="w-24 text-white">
-                                                {nombre}
-                                            </Label>
-                                            <input
-                                                type="checkbox"
-                                                checked={horario.activo}
-                                                onChange={() =>
-                                                    setHorarios((prev) =>
-                                                        prev.map((h) =>
-                                                            h.dia === index
-                                                                ? {
-                                                                      ...h,
-                                                                      activo: !h.activo,
-                                                                  }
-                                                                : h
-                                                        )
+                            <div className="grid gap-2">
+                                {horarios.map((h, idx) => (
+                                    <div
+                                        key={h.dia ?? idx}
+                                        className="flex items-center gap-4"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={h.activo}
+                                            onChange={() =>
+                                                setHorarios((prev) =>
+                                                    prev.map((prevH, i) =>
+                                                        i === idx
+                                                            ? {
+                                                                  ...prevH,
+                                                                  activo: !prevH.activo,
+                                                              }
+                                                            : prevH
                                                     )
-                                                }
-                                            />
-                                            {horario.activo && (
-                                                <div className="flex gap-2 items-center">
-                                                    <input
-                                                        type="time"
-                                                        value={horario.apertura}
-                                                        onChange={(e) =>
-                                                            setHorarios(
-                                                                (prev) =>
-                                                                    prev.map(
-                                                                        (h) =>
-                                                                            h.dia ===
-                                                                            index
-                                                                                ? {
-                                                                                      ...h,
-                                                                                      apertura:
-                                                                                          e
-                                                                                              .target
-                                                                                              .value,
-                                                                                  }
-                                                                                : h
-                                                                    )
-                                                            )
-                                                        }
-                                                        className="input !py-1 text-sm rounded-lg"
-                                                    />
-                                                    <span className="text-white">
-                                                        a
-                                                    </span>
-                                                    <input
-                                                        type="time"
-                                                        value={horario.cierre}
-                                                        onChange={(e) =>
-                                                            setHorarios(
-                                                                (prev) =>
-                                                                    prev.map(
-                                                                        (h) =>
-                                                                            h.dia ===
-                                                                            index
-                                                                                ? {
-                                                                                      ...h,
-                                                                                      cierre: e
-                                                                                          .target
-                                                                                          .value,
-                                                                                  }
-                                                                                : h
-                                                                    )
-                                                            )
-                                                        }
-                                                        className="input !py-1 text-sm rounded-lg"
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
+                                                )
+                                            }
+                                            className="scale-125 accent-emerald-500"
+                                        />
+                                        <span className="w-20 text-white">
+                                            {
+                                                [
+                                                    "Dom",
+                                                    "Lun",
+                                                    "Mar",
+                                                    "Mié",
+                                                    "Jue",
+                                                    "Vie",
+                                                    "Sáb",
+                                                ][h.dia]
+                                            }
+                                        </span>
+                                        <HourSelect
+                                            value={h.apertura ?? ""}
+                                            disabled={!h.activo}
+                                            onChange={(val) =>
+                                                setHorarios((prev) =>
+                                                    prev.map((prevH, i) =>
+                                                        i === idx
+                                                            ? {
+                                                                  ...prevH,
+                                                                  apertura: val,
+                                                              }
+                                                            : prevH
+                                                    )
+                                                )
+                                            }
+                                        />
+                                        <span className="text-white">a</span>
+                                        <HourSelect
+                                            value={h.cierre ?? ""}
+                                            disabled={!h.activo}
+                                            onChange={(val) =>
+                                                setHorarios((prev) =>
+                                                    prev.map((prevH, i) =>
+                                                        i === idx
+                                                            ? {
+                                                                  ...prevH,
+                                                                  cierre: val,
+                                                              }
+                                                            : prevH
+                                                    )
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                ))}
                             </div>
 
                             <h3 className="text-white text-lg font-semibold mt-8 mb-2">

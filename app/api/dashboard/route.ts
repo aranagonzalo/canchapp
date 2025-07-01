@@ -110,6 +110,29 @@ export async function GET(req: NextRequest) {
         })
     );
 
+    // 4. Reseñas del jugador
+    const { data: reseñas, error: reseñasError } = await db
+        .from("reviews_complejo")
+        .select("puntuacion")
+        .eq("id_jugador", id_jugador);
+
+    if (reseñasError)
+        return NextResponse.json(
+            { error: "Error al cargar reseñas" },
+            { status: 500 }
+        );
+
+    const totalReseñas = reseñas.length;
+    const promedioPuntaje =
+        totalReseñas > 0
+            ? Number(
+                  (
+                      reseñas.reduce((sum, r) => sum + r.puntuacion, 0) /
+                      totalReseñas
+                  ).toFixed(1)
+              )
+            : 0.0;
+
     return NextResponse.json({
         reservas: {
             listado: reservasProximas,
@@ -118,5 +141,9 @@ export async function GET(req: NextRequest) {
         },
         equipos,
         complejos_recomendados: complejosConImagenes,
+        reviews: {
+            cantidad: totalReseñas,
+            promedio_puntaje: promedioPuntaje,
+        },
     });
 }

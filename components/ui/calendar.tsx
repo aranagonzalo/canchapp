@@ -23,6 +23,8 @@ function Calendar({
                 month_caption:
                     "flex justify-center items-center w-full px-2 capitalize",
                 caption_label: "text-sm font-medium",
+                caption_dropdowns: "flex gap-2 justify-center items-center",
+
                 nav: "flex items-center gap-2",
                 nav_button: cn(
                     buttonVariants({ variant: "outline" }),
@@ -64,7 +66,7 @@ function Calendar({
                 PreviousMonthButton: (props) => (
                     <button
                         {...props}
-                        className="p-1 text-white absolute left-1 top-3"
+                        className="p-1 text-white absolute left-1 top-15"
                         aria-label="Mes anterior"
                     >
                         <ChevronLeft className="size-4" />
@@ -73,7 +75,7 @@ function Calendar({
                 NextMonthButton: (props) => (
                     <button
                         {...props}
-                        className="p-1 text-white absolute right-1 top-3"
+                        className="p-1 text-white absolute right-1 top-15"
                         aria-label="Mes siguiente"
                     >
                         <ChevronRight className="size-4" />

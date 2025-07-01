@@ -28,7 +28,7 @@ function isValidPhone(phone: string) {
 }
 
 function isValidDirection(str: string) {
-    return /^[a-zA-Z0-9 ]{2,50}$/.test(str);
+    return /^[a-zA-Z0-9\s#.,\-ºª/áéíóúÁÉÍÓÚñÑ]{5,100}$/.test(str.trim());
 }
 
 async function existeUsuario(mail: string) {
@@ -54,48 +54,85 @@ export async function POST(req: Request) {
 
         const errores: Record<string, string> = {};
 
+        const mensajes: string[] = [];
+
         if (!isValidString(nombreComplejo)) {
-            errores.nombreComplejo = "Nombre del complejo no válido";
+            const msg =
+                "El nombre del complejo debe tener al menos 3 caracteres y solo letras.";
+            errores.nombreComplejo = msg;
+            mensajes.push(msg);
         }
+
         if (!isValidPhone(cuit)) {
-            errores.cuit = "CUIT no válido";
+            const msg = "El CUIT ingresado no es válido.";
+            errores.cuit = msg;
+            mensajes.push(msg);
         }
+
         if (!isValidString(ciudad)) {
-            errores.ciudad = "Ciudad no válida";
+            const msg =
+                "La ciudad debe tener al menos 3 caracteres y solo letras.";
+            errores.ciudad = msg;
+            mensajes.push(msg);
         }
+
         if (!isValidDirection(direccion)) {
-            errores.direccion = "Dirección no válida";
+            const msg =
+                "La dirección debe tener mínimo 2 caracteres y puede incluir letras y números.";
+            errores.direccion = msg;
+            mensajes.push(msg);
         }
+
         if (!isValidPhone(telefonoComplejo)) {
-            errores.telefonoComplejo = "Teléfono del complejo no válido";
+            const msg =
+                "El teléfono del complejo debe tener entre 8 y 14 dígitos, incluye código de país si aplica.";
+            errores.telefonoComplejo = msg;
+            mensajes.push(msg);
         }
 
-        if (Object.keys(errores).length > 0) {
-            return NextResponse.json(
-                { message: "Errores de validación", errores },
-                { status: 400 }
-            );
-        }
-
+        // Validación de campos de usuario
         if (!isValidString(nombre)) {
-            errores.nombre = "Nombre no válido";
-        }
-        if (!isValidString(apellido)) {
-            errores.apellido = "Apellido no válido";
-        }
-        if (!isValidEmail(mail)) {
-            errores.mail = "Correo electrónico no válido";
-        }
-        if (!isValidPass(contrasena)) {
-            errores.contrasena =
-                "Contraseña debe tener entre 8 y 20 caracteres, una mayúscula, una minúscula y un número";
+            const msg =
+                "El nombre debe contener al menos 3 caracteres y solo letras.";
+            errores.nombre = msg;
+            mensajes.push(msg);
         }
 
-        // Si hay cualquier error, lo retornamos todos juntos
-        if (Object.keys(errores).length > 0) {
+        if (!isValidString(apellido)) {
+            const msg =
+                "El apellido debe contener al menos 3 caracteres y solo letras.";
+            errores.apellido = msg;
+            mensajes.push(msg);
+        }
+
+        if (!isValidEmail(mail)) {
+            const msg = "El correo electrónico ingresado no es válido.";
+            errores.mail = msg;
+            mensajes.push(msg);
+        }
+
+        if (!isValidPass(contrasena)) {
+            const msg =
+                "La contraseña debe tener entre 8 y 20 caracteres, incluir una mayúscula, una minúscula y un número.";
+            errores.contrasena = msg;
+            mensajes.push(msg);
+        }
+
+        // Si hay errores
+        if (mensajes.length > 0) {
+            let mensajeFinal = "";
+
+            if (mensajes.length === 1) {
+                mensajeFinal = mensajes[0];
+            } else {
+                const todasMenosUltima = mensajes.slice(0, -1).join(", ");
+                const ultima = mensajes[mensajes.length - 1];
+                mensajeFinal = `${todasMenosUltima} y ${ultima}`;
+            }
+
             return NextResponse.json(
                 {
-                    message: "Errores de validación",
+                    message: mensajeFinal,
                     errores,
                 },
                 { status: 400 }

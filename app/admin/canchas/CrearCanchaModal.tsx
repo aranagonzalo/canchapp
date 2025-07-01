@@ -67,7 +67,7 @@ export default function CrearCanchaModal({
 
     return (
         <Dialog open onOpenChange={onClose}>
-            <DialogContent>
+            <DialogContent className="bg-[#1a1f2b] border-gray-800 text-white">
                 <DialogHeader>
                     <DialogTitle>Crear Nueva Cancha</DialogTitle>
                 </DialogHeader>
@@ -76,6 +76,7 @@ export default function CrearCanchaModal({
                         placeholder="Nombre de la cancha"
                         value={nombre}
                         onChange={(e) => setNombre(e.target.value)}
+                        className="border-gray-700"
                     />
                     <div className="flex items-center gap-2">
                         <Switch checked={techo} onCheckedChange={setTecho} />
@@ -86,7 +87,7 @@ export default function CrearCanchaModal({
                         value={jugadores}
                         onValueChange={(value) => setJugadores(value)}
                     >
-                        <SelectTrigger>
+                        <SelectTrigger className="border-gray-700">
                             <SelectValue placeholder="Cantidad de jugadores" />
                         </SelectTrigger>
                         <SelectContent>
@@ -103,6 +104,7 @@ export default function CrearCanchaModal({
                         value={precio}
                         onChange={(e) => setPrecio(e.target.value)}
                         type="number"
+                        className="border-gray-700"
                     />
 
                     <div className="flex flex-col gap-2">
@@ -113,6 +115,7 @@ export default function CrearCanchaModal({
                             type="file"
                             accept="image/*"
                             onChange={handleFileChange}
+                            className="border-gray-700 text-white shadow"
                         />
                         {preview && (
                             <Image

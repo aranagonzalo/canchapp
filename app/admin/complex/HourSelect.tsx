@@ -26,7 +26,7 @@ export default function HourSelect({
     return (
         <Select value={value} onValueChange={onChange} disabled={disabled}>
             <SelectTrigger
-                className={`bg-slate-800 text-white border rounded px-2 py-1 disabled:opacity-40 w-[100px]`}
+                className={` text-white border bg-[#1a1f2b] border-gray-600 rounded-md px-2 py-1 disabled:opacity-40 w-[100px]`}
             >
                 <SelectValue placeholder="--:--" />
             </SelectTrigger>

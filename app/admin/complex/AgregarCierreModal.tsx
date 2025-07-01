@@ -78,38 +78,40 @@ export default function AgregarCierreModal({
                     Agregar Cierre Temporal
                 </Button>
             </DialogTrigger>
-            <DialogContent className="bg-[#0b1120] text-white border border-slate-700">
+            <DialogContent className="bg-[#1a1f2b] text-white border border-gray-800">
                 <DialogHeader>
                     <DialogTitle>Nuevo Cierre Temporal</DialogTitle>
                 </DialogHeader>
-                <div className="flex flex-col gap-3 mt-2">
+                <div className="flex flex-col gap-5 mt-5">
                     <div>
-                        <Label>Fecha de inicio</Label>
+                        <Label className="mb-2.5">Fecha de inicio</Label>
                         <Input
                             type="date"
                             value={fechaInicio}
                             onChange={(e) => setFechaInicio(e.target.value)}
-                            className="text-white"
+                            className="text-white border-gray-700"
                         />
                     </div>
                     <div>
-                        <Label>Fecha de fin</Label>
+                        <Label className="mb-2.5">Fecha de fin</Label>
                         <Input
                             type="date"
                             value={fechaFin}
                             onChange={(e) => setFechaFin(e.target.value)}
+                            className="text-white border-gray-700"
                         />
                     </div>
                     <div>
-                        <Label>Motivo (opcional)</Label>
+                        <Label className="mb-2.5">Motivo (opcional)</Label>
                         <Input
                             value={motivo}
                             onChange={(e) => setMotivo(e.target.value)}
                             placeholder="Vacaciones, mantenimiento..."
+                            className="text-white border-gray-700"
                         />
                     </div>
                 </div>
-                <DialogFooter className="mt-4">
+                <DialogFooter className="mt-3">
                     <Button
                         disabled={loading}
                         onClick={handleGuardar}

@@ -55,7 +55,7 @@ export default function Banner() {
                     <div className="mt-6 flex items-center text-sm text-gray-300">
                         <AvatarStack />
                         <span className="text-green-400 font-bold ml-36 mr-2">
-                            +1000
+                            +60
                         </span>{" "}
                         usuarios ya están jugando
                     </div>

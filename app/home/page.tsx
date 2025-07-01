@@ -6,7 +6,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Calendar, Users, Clock, MapPin, Star } from "lucide-react";
 import AvailableTeamsPlayer from "./AvailableTeamsPlayer";
-import AvailableTeamsAdmin from "./AvailableTeamsAdmin";
 import MyTeamsPlayer from "./MyTeamsPlayer";
 import Players from "./Players";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -44,6 +43,11 @@ interface Dashboard {
         listado: Reserva[]; // O mejor aún: Reserva[] si defines su tipo
         total: number;
         ultimos_30_dias: number;
+    };
+
+    reviews: {
+        cantidad: number;
+        promedio_puntaje: number;
     };
 }
 
@@ -200,10 +204,11 @@ export default function HomePage() {
                                     <MapPin className="text-emerald-400 w-4 h-4" />
                                 </div>
                                 <h2 className="text-3xl font-semibold my-4">
-                                    4
+                                    {dashboard?.reviews?.cantidad}
                                 </h2>
                                 <p className="text-xs text-gray-500">
-                                    4.2 es tu promedio de puntaje
+                                    {dashboard?.reviews?.promedio_puntaje} es la
+                                    puntuación promedio
                                 </p>
                             </div>
                         </div>
@@ -422,9 +427,7 @@ export default function HomePage() {
                                 <MyTeamsPlayer id_jugador={user?.id} />
                             </TabsContent>
                         </Tabs>
-                    ) : (
-                        <AvailableTeamsAdmin />
-                    )}
+                    ) : null}
                 </TabsContent>
 
                 <TabsContent value="jugadores">

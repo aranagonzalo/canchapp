@@ -75,7 +75,7 @@ export default function CanchasAdmin() {
                         </h2>
                         <p className="text-gray-400 mt-2">
                             Edita, agrega fechas, o elimina las canchas
-                            registradas de tu complejo.
+                            registradas de tu predio.
                         </p>
                     </div>
 
@@ -90,7 +90,7 @@ export default function CanchasAdmin() {
 
                 {canchas.length === 0 ? (
                     <p className="text-sm text-gray-400">
-                        Tu complejo aún no tiene canchas registradas.
+                        Tu predio aún no tiene canchas registradas.
                     </p>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

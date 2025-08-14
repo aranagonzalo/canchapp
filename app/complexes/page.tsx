@@ -82,7 +82,7 @@ export default function ComplejosPage() {
                 setComplejos(data);
                 setFiltered(data);
             })
-            .catch((err) => console.error("Error al obtener complejos:", err));
+            .catch((err) => console.error("Error al obtener predios:", err));
     }, []);
 
     useEffect(() => {
@@ -97,11 +97,9 @@ export default function ComplejosPage() {
     return (
         <div className="min-h-screen bg-gradient-to-b to-[#0b1120] from-[#030712] text-white py-32 px-6">
             <div className="max-w-[1200px] mx-auto">
-                <h1 className="text-3xl font-bold mb-2">
-                    Complejos deportivos
-                </h1>
+                <h1 className="text-3xl font-bold mb-2">Predios deportivos</h1>
                 <p className="text-gray-400 mb-6">
-                    Filtra y visualiza los complejos disponibles
+                    Filtra y visualiza los predios disponibles
                 </p>
 
                 <Input
@@ -115,7 +113,7 @@ export default function ComplejosPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <h2 className="text-xl font-semibold mb-3">
-                            Lista de Complejos
+                            Lista de Predios
                         </h2>
                         <ul className="space-y-3 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
                             {filtered?.map((c) => (

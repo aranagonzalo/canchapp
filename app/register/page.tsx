@@ -674,7 +674,7 @@ export default function RegisterPage() {
                             className="max-h-[414px] overflow-y-auto"
                         >
                             <h3 className="text-white text-lg font-semibold mb-2">
-                                Datos del Complejo
+                                Datos del Predio
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                 {(
@@ -697,7 +697,7 @@ export default function RegisterPage() {
                                         AdminField,
                                         string
                                     > = {
-                                        complejo: "Complejo Deportivo Sur",
+                                        complejo: "Predio Deportivo Sur",
                                         cuit: "20-12345678-9",
                                         provincia: "Buenos Aires",
                                         ciudad: "La Plata",

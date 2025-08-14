@@ -76,14 +76,17 @@ export async function POST(req: NextRequest) {
         }
 
         // 4. Insertar la reserva
-        const { error: insertError } = await db.from("reservas").insert({
-            id_equipo,
-            id_cancha,
-            id_complejo,
-            fecha,
-            horas,
-            is_active: true, // booleano 'Activa'
-        });
+        const { data: nuevaReserva, error: insertError } = await db
+            .from("reservas")
+            .insert({
+                id_cancha,
+                id_complejo,
+                fecha,
+                horas,
+                is_active: true,
+            })
+            .select("id") // Para obtener el ID de la reserva creada
+            .single();
 
         if (insertError) {
             return NextResponse.json(
@@ -92,7 +95,30 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        return NextResponse.json({ success: true }, { status: 201 });
+        if (!nuevaReserva?.id) {
+            return NextResponse.json(
+                { error: "No se pudo obtener ID de la nueva reserva" },
+                { status: 500 }
+            );
+        }
+
+        const { error: vinculoError } = await db.from("reserva_equipo").insert({
+            id_reserva: nuevaReserva.id,
+            id_equipo,
+            es_creador: true,
+        });
+
+        if (vinculoError) {
+            return NextResponse.json(
+                { error: "Error al asociar equipo a la reserva" },
+                { status: 500 }
+            );
+        }
+
+        return NextResponse.json(
+            { success: true, id_reserva: nuevaReserva.id },
+            { status: 201 }
+        );
     } catch (err) {
         console.error("Error en POST /reservas/create:", err);
         return NextResponse.json(

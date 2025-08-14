@@ -9,18 +9,30 @@ import { es } from "date-fns/locale";
 import ReservationModal from "./ReservationsModal";
 import { reservaExpirada } from "@/lib/utils";
 
+interface EquipoRef {
+    id_equipo: number;
+    nombre_equipo: string;
+}
+
 interface Reserva {
+    id: number;
+    id_admin: number | null;
+
     nombre_complejo: string;
     direccion_complejo: string;
     telefono_complejo: string;
     nombre_cancha: string;
-    id_admin: number;
-    mail_admin: string;
+
+    // ya NO hay id_admin ni id
+    mail_admin: string | null;
+
     fecha: string;
     horas: string[];
-    nombre_equipo?: string;
-    id: number;
     is_active: boolean;
+
+    // nuevo formato
+    equipoCreador: EquipoRef | null;
+    equipoInvitado: EquipoRef | null;
 }
 
 export default function MisReservas() {

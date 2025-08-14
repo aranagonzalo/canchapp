@@ -12,7 +12,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import MyReservations from "./MyReservations";
 import MyRequests from "./MyRequests";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { StarRating } from "@/components/StarRating";
 import { formatHourRange } from "@/lib/utils";
@@ -108,6 +108,7 @@ export default function HomePage() {
 
     return (
         <main className="min-h-screen bg-gradient-to-b to-[#0b1120] from-[#030712] text-white pt-24 px-6 pb-16">
+            <Toaster richColors position="top-right" />
             <header className="flex items-center justify-between mb-8 max-w-[1200px] mx-auto">
                 <h1 className="text-3xl font-bold">
                     {tabParam[0].toUpperCase() +
@@ -272,7 +273,7 @@ export default function HomePage() {
                                     onClick={() => router.push("/complexes")}
                                     className="cursor-pointer w-full mt-2 text-white bg-[#2a2f40] hover:bg-[#363c50] border border-[#3b445c] text-sm"
                                 >
-                                    + Reservar un complejo
+                                    + Reservar un predio
                                 </Button>
                             </ul>
                         </section>
@@ -348,7 +349,7 @@ export default function HomePage() {
 
                     <section className="mt-10">
                         <h3 className="text-xl font-bold mb-2">
-                            Complejos Recomendados
+                            Predios Recomendados
                         </h3>
                         <p className="text-sm text-gray-400 mb-4">
                             Basado en tus reservas anteriores

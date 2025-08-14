@@ -68,7 +68,7 @@ export default function ReviewsModal({
             <DialogContent className="bg-[#1a1f2b] border border-gray-700 text-white">
                 <DialogHeader>
                     <DialogTitle className="text-lg">
-                        Califica este complejo
+                        Califica este predio
                     </DialogTitle>
                 </DialogHeader>
 

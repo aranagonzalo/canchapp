@@ -45,7 +45,7 @@ export default function Navbar() {
                 <>
                     <div className="hidden md:flex gap-8 text-sm">
                         <a href="#complejos" className="hover:text-green-400">
-                            Complejos
+                            Predios
                         </a>
                         <a href="#funciona" className="hover:text-green-400">
                             Cómo Funciona
@@ -80,7 +80,7 @@ export default function Navbar() {
 
                             <Link href="/complexes" className="">
                                 <Button className="flex gap-1.5 items-center bg-gradient-to-r from-custom-dark-green to-custom-green hover:from-emerald-700 hover:to-emerald-600 cursor-pointer text-white text-sm">
-                                    <Search className="!w-3 !h-3" /> Complejos
+                                    <Search className="!w-3 !h-3" /> Predios
                                 </Button>
                             </Link>
                         </>
@@ -97,7 +97,7 @@ export default function Navbar() {
                                 href="/admin/complex"
                                 className="hover:text-green-400"
                             >
-                                Complejo
+                                Predio
                             </Link>
                             <Link
                                 href="/admin/canchas"

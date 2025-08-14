@@ -90,7 +90,7 @@ export default function ComplejoDetallePage() {
                 setLoading(false);
             })
             .catch((err) => {
-                console.error("Error al obtener el complejo:", err);
+                console.error("Error al obtener el predio:", err);
                 setLoading(false);
             });
     }, [id]);
@@ -106,7 +106,7 @@ export default function ComplejoDetallePage() {
         return (
             <div className="min-h-screen bg-gradient-to-b from-[#0b1120] to-[#030712] text-white flex flex-col items-center justify-center">
                 <p className="text-xl mb-4">
-                    No se encontró el complejo solicitado.
+                    No se encontró el predio solicitado.
                 </p>
                 <Button onClick={() => router.push("/complexes")}>
                     Volver al mapa
@@ -183,7 +183,7 @@ export default function ComplejoDetallePage() {
                             variant="secondary"
                             className="z-30 cursor-pointer hover:bg-gray-300"
                         >
-                            Califica este complejo
+                            Califica este predio
                         </Button>
                         {openReviewModal && user?.id && (
                             <ReviewsModal
@@ -229,7 +229,7 @@ export default function ComplejoDetallePage() {
 
                     {canchas.length === 0 ? (
                         <p className="text-sm text-gray-400">
-                            Este complejo aún no tiene canchas registradas.
+                            Este predio aún no tiene canchas registradas.
                         </p>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -283,7 +283,7 @@ export default function ComplejoDetallePage() {
                                         </Button>
                                         {!isOperational && (
                                             <p className="text-xs text-red-400 mt-1 text-center">
-                                                Este complejo aún no tiene
+                                                Este predio aún no tiene
                                                 horarios disponibles.
                                             </p>
                                         )}
@@ -316,7 +316,7 @@ export default function ComplejoDetallePage() {
 
                 <TabsContent value="info">
                     <h2 className="text-xl font-bold mb-4">
-                        Información del Complejo
+                        Información del Predio
                     </h2>
                     <p className="text-sm text-gray-400 mb-2">
                         <Phone className="inline w-4 h-4 mr-1" />{" "}
@@ -324,7 +324,7 @@ export default function ComplejoDetallePage() {
                     </p>
                     <p className="text-sm text-gray-400">
                         {complejo.descripcion ||
-                            "Este complejo aún no tiene descripción."}
+                            "Este predio aún no tiene descripción."}
                     </p>
                 </TabsContent>
 

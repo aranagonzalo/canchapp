@@ -32,8 +32,8 @@ export default function Banner() {
                         de reservar tu cancha
                     </h1>
                     <p className="text-base md:text-lg text-gray-300 mb-8">
-                        CanchApp te conecta con los mejores complejos
-                        deportivos. <br />
+                        CanchApp te conecta con los mejores predios deportivos.{" "}
+                        <br />
                         Forma tu equipo, elige tu horario y ¡a jugar!
                     </p>
                     <div className="flex flex-wrap gap-4">
@@ -48,7 +48,7 @@ export default function Banner() {
                                 onClick={handleVerComplejos}
                                 className="cursor-pointer transition-all hover:scale-[1.03] hover:bg-white  bg-gray-200 text-black px-6 py-3 rounded-full font-semibold"
                             >
-                                Ver Complejos
+                                Ver Predios
                             </button>
                         </div>
                     </div>

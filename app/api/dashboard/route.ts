@@ -42,17 +42,30 @@ export async function GET(req: NextRequest) {
 
     // 2. Reservas de esos equipos
     const { data: reservas, error: reservasError } = await db
-        .from("reservas")
+        .from("reserva_equipo")
         .select(
-            "id, fecha, horas, is_active, complejo(nombre_complejo, direccion), id_equipo"
+            `
+        reservas:reservas (
+            id,
+            fecha,
+            horas,
+            is_active,
+            complejo (
+                nombre_complejo,
+                direccion
+            )
+        )
+    `
         )
         .in("id_equipo", idsEquipos);
 
     if (reservasError)
         return NextResponse.json({ error: reservasError }, { status: 500 });
 
-    const totalReservas = reservas.length;
-    const reservasUltimos30 = reservas.filter(
+    const reservasPlanas = reservas.map((r: any) => r.reservas);
+    const totalReservas = reservasPlanas.length;
+
+    const reservasUltimos30 = reservasPlanas.filter(
         (r) => r.fecha >= fechaLimite
     ).length;
 
@@ -62,7 +75,7 @@ export async function GET(req: NextRequest) {
     const horaActual = ahora.getHours() + (ahora.getMinutes() > 0 ? 1 : 0);
 
     // Próximas reservas
-    const reservasProximas = reservas.filter((r) => {
+    const reservasProximas = reservasPlanas.filter((r) => {
         if (r.fecha > hoyISO) return true;
         if (r.fecha === hoyISO) {
             const primeraHora = parseInt(r.horas[0], 10);

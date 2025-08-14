@@ -156,7 +156,7 @@ export default function CalendarioReservas() {
 
                 {canchas.length === 0 ? (
                     <p className="text-gray-500 mt-6">
-                        No hay canchas registradas en tu complejo.
+                        No hay canchas registradas en tu predio.
                     </p>
                 ) : !canchaSeleccionada ? (
                     <p className="text-gray-500 mt-6">

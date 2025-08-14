@@ -32,7 +32,7 @@ export default function Footer() {
                     <ul className="space-y-2 text-sm">
                         <li>
                             <a href="/#complejos" className="hover:text-white">
-                                Complejos
+                                Predios
                             </a>
                         </li>
                         <li>

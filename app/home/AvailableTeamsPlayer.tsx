@@ -18,6 +18,7 @@ import { useNotifications } from "@/hooks";
 import { sendEmail } from "@/hooks/sendEmail";
 import { useUser } from "@/context/userContext";
 import { getSolicitudEmailTemplate } from "@/lib/utils";
+import RivalModal from "./RivalModal";
 
 type Equipo = {
     id_equipo: number;
@@ -52,6 +53,8 @@ export default function EquiposDisponibles({
     const [loadingSolicitudId, setLoadingSolicitudId] = useState<number | null>(
         null
     );
+    const [rival, setRival] = useState<Equipo | null>(null);
+    const [openRivalModal, setOpenRivalModal] = useState(false);
 
     const equiposFiltrados = equipos.filter((equipo) =>
         equipo.nombre_equipo.toLowerCase().includes(filtroNombre.toLowerCase())
@@ -203,6 +206,11 @@ export default function EquiposDisponibles({
         }
     };
 
+    const handleRivalModal = async (equipo: Equipo) => {
+        setRival(equipo);
+        setOpenRivalModal(true);
+    };
+
     useEffect(() => {
         const fetchEquipos = async () => {
             try {
@@ -251,10 +259,13 @@ export default function EquiposDisponibles({
                             Jugadores
                         </TableHead>
                         <TableHead className="text-white font-semibold">
+                            Solicitud
+                        </TableHead>
+                        <TableHead className="text-white font-semibold">
                             Estado
                         </TableHead>
                         <TableHead className="text-white font-semibold">
-                            Solicitud
+                            Invitar a Jugar
                         </TableHead>
                     </TableRow>
                 </TableHeader>
@@ -331,6 +342,14 @@ export default function EquiposDisponibles({
                                     equipo.solicitud
                                 )}
                             </TableCell>
+                            <TableCell>
+                                <button
+                                    onClick={() => handleRivalModal(equipo)}
+                                    className="text-white bg-gradient-to-r from-custom-dark-green to-custom-green px-2 py-1 rounded font-medium text-xs cursor-pointer hover:from-emerald-700 hover:to-emerald-600"
+                                >
+                                    Invitar
+                                </button>
+                            </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
@@ -341,6 +360,13 @@ export default function EquiposDisponibles({
                 open={showModal}
                 onClose={() => setShowModal(false)}
             />
+            {rival && (
+                <RivalModal
+                    equipo={rival}
+                    open={openRivalModal}
+                    onClose={() => setOpenRivalModal(false)}
+                />
+            )}
         </div>
     );
 }

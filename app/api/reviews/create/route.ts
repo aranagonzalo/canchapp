@@ -1,6 +1,15 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/supabase";
 
+type ReservaEquipoJoin = {
+    reserva: {
+        fecha: string;
+        horas: string[];
+        id_complejo: number;
+        is_active: boolean;
+    } | null;
+};
+
 export async function POST(req: Request) {
     const body = await req.json();
     const { id_jugador, id_complejo, puntuacion, comentario } = body;
@@ -34,22 +43,31 @@ export async function POST(req: Request) {
 
     const idsEquipos = equiposCapitan.map((e) => e.id_equipo);
 
-    console.log(idsEquipos);
-
     // Buscar reservas válidas (activas y pasadas)
     const hoy = new Date();
-    const { data: reservas } = await db
-        .from("reservas")
-        .select("fecha, horas, id_complejo, is_active")
-        .in("id_equipo", idsEquipos)
-        .eq("id_complejo", id_complejo)
-        .eq("is_active", true);
+    const { data: reservas } = (await db
+        .from("reserva_equipo")
+        .select(
+            `
+        reserva (
+            fecha,
+            horas,
+            id_complejo,
+            is_active
+        )
+    `
+        )
+        .in("id_equipo", idsEquipos)) as unknown as {
+        data: ReservaEquipoJoin[];
+    };
 
-    console.log(reservas);
+    const reservasValidas = reservas
+        ?.map((r) => r.reserva)
+        .filter((res) => res?.id_complejo === id_complejo && res?.is_active);
 
-    const tieneReservaPasada = reservas?.some((res) => {
-        const horaFinal = (res.horas.at(-1) ?? "23") + ":00";
-        const fechaReserva = new Date(`${res.fecha}T${horaFinal}`);
+    const tieneReservaPasada = reservasValidas?.some((res) => {
+        const horaFinal = (res?.horas.at(-1) ?? "23") + ":00";
+        const fechaReserva = new Date(`${res?.fecha}T${horaFinal}`);
         return fechaReserva < hoy;
     });
 

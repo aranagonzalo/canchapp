@@ -2,16 +2,20 @@ import ReceivedRequestsTable from "@/app/home/request-tables/ReceivedRequestsTab
 import ReceivedInvitationsTable from "@/app/home/request-tables/ReceivedInvitationsTable";
 import SentInvitationsTable from "@/app/home/request-tables/SentInvitationsTable";
 import SentRequestsTable from "@/app/home/request-tables/SentRequestsTable";
+import ReceivedRivalsTable from "./request-tables/ReceivedRivalsTable";
+import SentRivalsTable from "./request-tables/SentRivalsTable";
 
 export default function MyRequests() {
     return (
         <div>
-            <h2 className="text-white text-xl font-semibold mb-4">
-                Mis Solicitudes
-            </h2>
             <div className="space-y-8">
+                <p className="mb-2">Acciones realizadas por otros usuarios</p>
+                <ReceivedRivalsTable />
                 <ReceivedRequestsTable />
                 <ReceivedInvitationsTable />
+
+                <p className="mb-2">Acciones realizadas por vos</p>
+                <SentRivalsTable />
                 <SentInvitationsTable />
                 <SentRequestsTable />
             </div>

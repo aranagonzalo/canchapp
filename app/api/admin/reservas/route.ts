@@ -32,13 +32,16 @@ export async function GET(req: NextRequest) {
         horas,
         id_complejo,
         id_cancha,
-        equipo (
-            id_equipo,
-            nombre_equipo,
-            capitan,
-            jugador:capitan (
-                nombre,
-                telefono
+        reserva_equipo (
+            es_creador,
+            equipo (
+                id_equipo,
+                nombre_equipo,
+                capitan,
+                jugador:capitan (
+                    nombre,
+                    telefono
+                )
             )
         )
     `
@@ -57,20 +60,22 @@ export async function GET(req: NextRequest) {
     }
 
     const eventos = reservas.flatMap((res: any) => {
-        return res.horas.map((hora: string, index: number) => {
+        const creador = res.reserva_equipo?.find((e: any) => e.es_creador);
+
+        return res.horas.map((hora: string) => {
             const start = `${res.fecha}T${hora}:00:00`;
             const endHour = (parseInt(hora) + 1).toString().padStart(2, "0");
             const end = `${res.fecha}T${endHour}:00:00`;
 
             return {
                 id: res.id,
-                title: res.equipo?.nombre_equipo ?? "Sin nombre",
+                title: creador?.equipo?.nombre_equipo ?? "Sin nombre",
                 start,
                 end,
-                id_equipo: res.equipo?.id_equipo,
+                id_equipo: creador?.equipo?.id_equipo,
                 is_active: res.is_active,
-                capitan: res.equipo?.jugador?.nombre ?? "Sin nombre",
-                telefono: res.equipo?.jugador?.telefono ?? "Sin número",
+                capitan: creador?.equipo?.jugador?.nombre ?? "Sin nombre",
+                telefono: creador?.equipo?.jugador?.telefono ?? "Sin número",
                 estado: res.estado,
             };
         });

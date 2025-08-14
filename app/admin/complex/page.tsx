@@ -105,7 +105,7 @@ export default function ComplejoAdminProfile() {
                 setLoading(false);
             })
             .catch((err) => {
-                console.error("Error al obtener complejo:", err);
+                console.error("Error al obtener predio:", err);
                 setLoading(false);
             });
     }, [user]);
@@ -168,7 +168,7 @@ export default function ComplejoAdminProfile() {
     if (!complejo) {
         return (
             <div className="text-white p-10">
-                No se encontró información del complejo.
+                No se encontró información del predio.
             </div>
         );
     }
@@ -219,7 +219,7 @@ export default function ComplejoAdminProfile() {
             <div className="w-full max-w-[700px] mt-8 border-gray-800 border bg-[#1a1f2b] rounded-xl p-8 mx-20">
                 <div className="flex justify-between items-center pb-8">
                     <h2 className="text-xl font-bold">
-                        Información del Complejo
+                        Información del Predio
                     </h2>
                     <div className="flex justify-end gap-4">
                         {editMode ? (
@@ -264,7 +264,7 @@ export default function ComplejoAdminProfile() {
                                 nombre_complejo: e.target.value,
                             })
                         }
-                        placeholder="Nombre del complejo"
+                        placeholder="Nombre del predio"
                         className="py-5 disabled:text-gray-500 disabled:border-gray-500 border-gray-400 shadow"
                     />
                     <Input
@@ -332,7 +332,7 @@ export default function ComplejoAdminProfile() {
                                 descripcion: e.target.value,
                             })
                         }
-                        placeholder="Descripción del complejo"
+                        placeholder="Descripción del predio"
                         className="h-24 col-span-2 resize-none disabled:text-gray-500 disabled:border-gray-500 border-gray-400 shadow"
                     />
                     {!editMode ? (

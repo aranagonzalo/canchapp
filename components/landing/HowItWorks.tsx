@@ -10,9 +10,9 @@ export function HowItWorks() {
             icon: <LucideUsers className="w-10 h-10 text-white" />,
         },
         {
-            title: "Encuentra Complejos",
+            title: "Encuentra Predios",
             description:
-                "Explora los mejores complejos deportivos cerca de ti y elige la cancha que más te guste.",
+                "Explora los mejores predios deportivos cerca de ti y elige la cancha que más te guste.",
             icon: <LucideMapPin className="w-10 h-10 text-white" />,
         },
         {

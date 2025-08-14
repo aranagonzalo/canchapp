@@ -79,7 +79,7 @@ export default function ImagenesModal({ idComplejo, open, onClose }: Props) {
                 <DialogHeader>
                     <DialogTitle>Galería de imágenes</DialogTitle>
                     <DialogDescription>
-                        Sube o elimina las imágenes de tu complejo.
+                        Sube o elimina las imágenes de tu predio.
                     </DialogDescription>
                 </DialogHeader>
 

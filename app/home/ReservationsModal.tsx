@@ -27,18 +27,30 @@ interface Props {
     onCancel: () => void;
 }
 
+interface EquipoRef {
+    id_equipo: number;
+    nombre_equipo: string;
+}
+
 interface Reserva {
+    id: number;
+    id_admin: number | null;
+
     nombre_complejo: string;
     direccion_complejo: string;
     telefono_complejo: string;
     nombre_cancha: string;
-    id_admin: number;
-    mail_admin: string;
+
+    // ya NO hay id_admin ni id
+    mail_admin: string | null;
+
     fecha: string;
     horas: string[];
-    nombre_equipo?: string;
-    id: number;
     is_active: boolean;
+
+    // nuevo formato
+    equipoCreador: EquipoRef | null;
+    equipoInvitado: EquipoRef | null;
 }
 
 export default function ReservationModal({
@@ -71,7 +83,7 @@ export default function ReservationModal({
                     )}`,
                     url: "/admin/reservas",
                     destinatarios: [
-                        { id: nuevaReserva.id_admin, tipo: "administrador" },
+                        { id: nuevaReserva.id_admin!, tipo: "administrador" },
                     ],
                 });
             } catch (err) {
@@ -92,7 +104,7 @@ export default function ReservationModal({
 
             try {
                 await sendEmail({
-                    to: nuevaReserva?.mail_admin,
+                    to: nuevaReserva?.mail_admin!,
                     subject: "CanchApp - Reserva Cancelada",
                     html: html,
                 });
@@ -120,8 +132,7 @@ export default function ReservationModal({
 
                 <div className="space-y-2 text-sm">
                     <p>
-                        <strong>Complejo:</strong>{" "}
-                        {nuevaReserva.nombre_complejo}
+                        <strong>Predio:</strong> {nuevaReserva.nombre_complejo}
                     </p>
                     <p>
                         <strong>Cancha:</strong> {nuevaReserva.nombre_cancha}
@@ -149,10 +160,21 @@ export default function ReservationModal({
                             }`;
                         })}
                     </p>
-                    <p>
-                        <strong>Equipo:</strong>{" "}
-                        {nuevaReserva.nombre_equipo || "No asignado"}
+                    <p className="mt-4 bg-custom-dark-green text-white p-2 rounded">
+                        <strong>Equipo que reservó: </strong>
+                        {nuevaReserva.equipoCreador?.nombre_equipo}
                     </p>
+                    {nuevaReserva.equipoInvitado && (
+                        <>
+                            <p className="w-full text-center text-xs font-bold text-gray-400">
+                                VS
+                            </p>
+                            <p className="bg-custom-green text-white p-2 rounded">
+                                <strong>Equipo invitado: </strong>
+                                {nuevaReserva.equipoInvitado?.nombre_equipo}
+                            </p>
+                        </>
+                    )}
                 </div>
 
                 <DialogFooter className="mt-4 items-center flex gap-3">
@@ -167,7 +189,7 @@ export default function ReservationModal({
                                 className="w-fit font-medium flex gap-2 bg-[#1b8d4a] hover:bg-[#007933] justify-center items-center text-white px-2.5 py-2 rounded-md text-[13px] tracking-normal transition"
                             >
                                 <img src="/whatsapp.png" className="w-5 h-5" />{" "}
-                                Contactar por WhatsApp
+                                Contactar predio por WhatsApp
                             </a>
                         )}
                     {nuevaReserva.is_active &&

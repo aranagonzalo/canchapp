@@ -46,7 +46,7 @@ export default function ComplejosPage() {
             return geocodeCache.get(direccion)!;
         }
 
-        const apiKey = "AIzaSyC717n1-JDtnYNbRu18MYpKnVxy3Zqw6Q8";
+        const apiKey = "AIzaSyBH5zGazn9Bl_I7tADSVsLZ3eEOEqP5MOU";
         const response = await fetch(
             `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
                 direccion
@@ -184,7 +184,7 @@ export default function ComplejosPage() {
 
                     <div>
                         <h2 className="text-xl font-semibold mb-3">Mapa</h2>
-                        <APIProvider apiKey="AIzaSyC717n1-JDtnYNbRu18MYpKnVxy3Zqw6Q8">
+                        <APIProvider apiKey="AIzaSyBH5zGazn9Bl_I7tADSVsLZ3eEOEqP5MOU">
                             <div className="h-[500px] w-full rounded-xl overflow-hidden border border-gray-700">
                                 <GoogleMap
                                     center={

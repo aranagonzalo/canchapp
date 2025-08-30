@@ -353,7 +353,7 @@ export default function RegisterPage() {
                             value="jugador"
                             className="max-h-[414px] overflow-y-auto"
                         >
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mr-6">
                                 {Object.entries(jugador).map(
                                     ([field, value]) => {
                                         const labelMap: Record<string, string> =
@@ -389,7 +389,7 @@ export default function RegisterPage() {
                                             return (
                                                 <div
                                                     key={field}
-                                                    className="flex flex-col"
+                                                    className="flex flex-col mr-6"
                                                 >
                                                     <Label className="text-white mb-1.5">
                                                         {labelMap[field]}
@@ -439,7 +439,7 @@ export default function RegisterPage() {
                                             return (
                                                 <div
                                                     key={field}
-                                                    className="flex flex-col"
+                                                    className="flex flex-col mr-6"
                                                 >
                                                     <Label className="text-white mb-1.5">
                                                         {labelMap[field]}
@@ -608,7 +608,7 @@ export default function RegisterPage() {
                                         return (
                                             <div
                                                 key={field}
-                                                className="flex flex-col"
+                                                className="flex flex-col mr-6"
                                             >
                                                 <Label className="text-white mb-1.5">
                                                     {labelMap[field]}
@@ -654,7 +654,7 @@ export default function RegisterPage() {
                                 type="button"
                                 onClick={() => handleSubmit("jugador")}
                                 className={cn(
-                                    "cursor-pointer mt-6 w-full py-2 text-white rounded-md font-medium transition flex justify-center items-center gap-2",
+                                    "cursor-pointer mt-6 w-[calc(100%-24px)] py-2 text-white rounded-md font-medium transition flex justify-center items-center gap-2",
                                     "bg-gradient-to-r from-custom-green to-custom-dark-green h-10",
                                     loading
                                         ? "opacity-70 cursor-not-allowed"
@@ -676,7 +676,7 @@ export default function RegisterPage() {
                             <h3 className="text-white text-lg font-semibold mb-2">
                                 Datos del Predio
                             </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 mr-6">
                                 {(
                                     [
                                         "complejo",
@@ -825,7 +825,7 @@ export default function RegisterPage() {
                             <h3 className="text-white text-lg font-semibold mt-8 mb-2">
                                 Datos del Administrador
                             </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mr-6">
                                 {(
                                     [
                                         "adminNombre",
@@ -905,7 +905,7 @@ export default function RegisterPage() {
                                 type="button"
                                 onClick={() => handleSubmit("admin")}
                                 className={cn(
-                                    "cursor-pointer mt-6 w-full py-2 text-white rounded-md font-medium transition flex justify-center items-center gap-2",
+                                    "cursor-pointer mt-6 w-[calc(100%-24px)] py-2 text-white rounded-md font-medium transition flex justify-center items-center gap-2",
                                     "bg-gradient-to-r from-custom-green to-custom-dark-green h-10",
                                     loading
                                         ? "opacity-70 cursor-not-allowed"

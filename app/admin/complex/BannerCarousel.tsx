@@ -26,13 +26,13 @@ export default function BannerCarousel({ images, onClickImage }: Props) {
             {images.map((img, index) => (
                 <SwiperSlide key={index}>
                     <div
-                        className="swiper-zoom-container cursor-pointer"
+                        className="swiper-zoom-container cursor-pointer !z-20"
                         onClick={onClickImage}
                     >
                         <img
                             src={img}
                             alt={`Imagen ${index + 1}`}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full !object-cover"
                         />
                     </div>
                 </SwiperSlide>

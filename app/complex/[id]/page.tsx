@@ -119,7 +119,7 @@ export default function ComplejoDetallePage() {
         <div className="bg-gradient-to-b from-[#0b1120] to-[#030712] min-h-screen pb-20  text-white">
             <Toaster richColors position="top-right" />
             {/* Banner */}
-            <div className="relative h-64 md:h-96 w-full bg-cover bg-center bg-no-repeat">
+            <div className="relative h-64 md:h-96 max-w-[1400px] mx-auto ">
                 {loadingImages ? (
                     <SkeletonCarousel />
                 ) : imagenes.length > 0 ? (
@@ -135,11 +135,11 @@ export default function ComplejoDetallePage() {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black opacity-80" />
                 <div className="absolute inset-0 flex items-end p-6 max-w-[1200px] mx-auto">
-                    <div className="z-30">
+                    <div className="z-30 bg-gray-900/60 p-2 rounded-lg">
                         <h1 className="text-3xl font-bold mb-2">
                             {complejo.nombre_complejo}
                         </h1>
-                        <div className="flex items-center text-sm text-gray-300">
+                        <div className="flex items-center text-sm text-gray-100">
                             <MapPin className="w-4 h-4 mr-1" />
                             <p className="mr-3">
                                 {complejo.ciudad}, {complejo.direccion}

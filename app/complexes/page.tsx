@@ -1,9 +1,9 @@
 "use client";
 
 import {
-    APIProvider,
     Map as GoogleMap,
     InfoWindow,
+    useMap,
 } from "@vis.gl/react-google-maps";
 import { ListCheck, MapPin, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -38,6 +38,14 @@ export default function ComplejosPage() {
 
     const router = useRouter();
 
+    const map = useMap();
+
+    useEffect(() => {
+        if (geoPosition && map) {
+            map.panTo(geoPosition);
+        }
+    }, [geoPosition, map]);
+
     async function geocodeDireccion(direccion: string): Promise<{
         lat: number;
         lng: number;
@@ -66,6 +74,7 @@ export default function ComplejosPage() {
 
     useEffect(() => {
         if (selected) {
+            console.log(selected);
             const direccionCompleta = `${selected.direccion}, ${selected.ciudad}`;
             geocodeDireccion(direccionCompleta).then((pos) => {
                 if (pos) setGeoPosition(pos);
@@ -184,62 +193,60 @@ export default function ComplejosPage() {
 
                     <div>
                         <h2 className="text-xl font-semibold mb-3">Mapa</h2>
-                        <APIProvider apiKey="AIzaSyBH5zGazn9Bl_I7tADSVsLZ3eEOEqP5MOU">
-                            <div className="h-[500px] w-full rounded-xl overflow-hidden border border-gray-700">
-                                <GoogleMap
-                                    center={
-                                        geoPosition ?? {
-                                            lat: -27.46,
-                                            lng: -58.98,
-                                        }
+
+                        <div className="h-[500px] w-full rounded-xl overflow-hidden border border-gray-700">
+                            <GoogleMap
+                                id="main-map"
+                                center={
+                                    geoPosition ?? {
+                                        lat: -27.46,
+                                        lng: -58.98,
                                     }
-                                    zoom={13}
-                                    className="w-full h-full"
-                                >
-                                    {selected && (
-                                        <InfoWindow
-                                            position={
-                                                geoPosition ?? {
-                                                    lat: -27.46,
-                                                    lng: -58.98,
-                                                }
+                                }
+                                zoom={13}
+                                className="w-full h-full"
+                            >
+                                {selected && (
+                                    <InfoWindow
+                                        position={
+                                            geoPosition ?? {
+                                                lat: -27.46,
+                                                lng: -58.98,
                                             }
-                                            onCloseClick={() =>
-                                                setSelected(null)
-                                            }
-                                            className="w-[280px] h-[100px] !overflow-hidden"
-                                            headerContent={
-                                                <div className="text-black text-lg font-medium w-full h-full">
-                                                    {selected.nombre_complejo}
-                                                </div>
-                                            }
-                                        >
-                                            <div className="!overflow-hidden h-full py-4 font-sm font-medium text-slate-700 flex flex-col gap-2 justify-between">
-                                                <p className="text-sm text-gray-700 flex gap-2 items-center">
-                                                    <MapPin className="w-4 h-4" />
-                                                    {selected.direccion}
-                                                </p>
-                                                <p className="text-sm text-gray-700 flex gap-1 items-center">
-                                                    <Phone className="w-4 h-4" />{" "}
-                                                    {selected.telefono}
-                                                </p>
-                                                <button
-                                                    onClick={() =>
-                                                        router.push(
-                                                            `/complex/${selected.id_complejo}`
-                                                        )
-                                                    }
-                                                    className="flex gap-1 bg-gradient-to-r from-custom-dark-green to-custom-green w-full h-fit items-center justify-center rounded shadow px-3 py-1 text-white font-medium text-sm cursor-pointer hover:from-emerald-700 hover:to-emerald-600"
-                                                >
-                                                    <ListCheck className="w-4 h-4" />
-                                                    Reservar{" "}
-                                                </button>
+                                        }
+                                        onCloseClick={() => setSelected(null)}
+                                        className="w-[280px] h-[100px] !overflow-hidden"
+                                        headerContent={
+                                            <div className="text-black text-lg font-medium w-full h-full">
+                                                {selected.nombre_complejo}
                                             </div>
-                                        </InfoWindow>
-                                    )}
-                                </GoogleMap>
-                            </div>
-                        </APIProvider>
+                                        }
+                                    >
+                                        <div className="!overflow-hidden h-full py-4 font-sm font-medium text-slate-700 flex flex-col gap-2 justify-between">
+                                            <p className="text-sm text-gray-700 flex gap-2 items-center">
+                                                <MapPin className="w-4 h-4" />
+                                                {selected.direccion}
+                                            </p>
+                                            <p className="text-sm text-gray-700 flex gap-1 items-center">
+                                                <Phone className="w-4 h-4" />{" "}
+                                                {selected.telefono}
+                                            </p>
+                                            <button
+                                                onClick={() =>
+                                                    router.push(
+                                                        `/complex/${selected.id_complejo}`
+                                                    )
+                                                }
+                                                className="flex gap-1 bg-gradient-to-r from-custom-dark-green to-custom-green w-full h-fit items-center justify-center rounded shadow px-3 py-1 text-white font-medium text-sm cursor-pointer hover:from-emerald-700 hover:to-emerald-600"
+                                            >
+                                                <ListCheck className="w-4 h-4" />
+                                                Reservar{" "}
+                                            </button>
+                                        </div>
+                                    </InfoWindow>
+                                )}
+                            </GoogleMap>
+                        </div>
                     </div>
                 </div>
             </div>

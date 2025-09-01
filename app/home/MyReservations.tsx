@@ -127,13 +127,7 @@ export default function MisReservas() {
                                         {reserva.nombre_cancha}
                                     </p>
                                     <p className="text-sm text-gray-300 mb-1">
-                                        {formatDistanceToNow(
-                                            parseISO(reserva.fecha),
-                                            {
-                                                addSuffix: true,
-                                                locale: es,
-                                            }
-                                        )}
+                                        {reserva.fecha}
                                     </p>
                                     <p className="text-sm text-gray-300">
                                         {reserva.horas.map(

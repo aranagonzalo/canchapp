@@ -49,7 +49,7 @@ export async function POST(req: Request) {
         .from("reserva_equipo")
         .select(
             `
-        reserva (
+        reserva:id_reserva (
             fecha,
             horas,
             id_complejo,

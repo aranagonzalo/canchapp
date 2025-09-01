@@ -160,7 +160,7 @@ export default function HomePage() {
                             <div className="flex flex-col w-full">
                                 <div className="w-full flex justify-between items-center">
                                     <p className="text-sm text-gray-400">
-                                        Reservas Activas
+                                        Total Reservas
                                     </p>
                                     <Clock className="text-emerald-400 w-4 h-4 " />
                                 </div>

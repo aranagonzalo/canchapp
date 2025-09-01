@@ -98,27 +98,23 @@ export function formatPhoneForWhatsApp(raw: string): string {
 }
 
 export function reservaExpirada(reserva: Reserva) {
-    const ahora = new Date();
+    if (!reserva?.horas?.length) return false; // si no hay horas, no la marcamos como expirada
 
-    const [year, month, day] = reserva.fecha.split("-");
-    const fechaReserva = new Date(Number(year), Number(month) - 1, Number(day));
+    const [yearStr, monthStr, dayStr] = reserva.fecha.split("-");
+    const y = parseInt(yearStr, 10);
+    const m = parseInt(monthStr, 10) - 1; // 0-indexed
+    const d = parseInt(dayStr, 10);
 
-    const ultimaHora = Math.max(...reserva.horas.map(Number)) + 1;
+    // último bloque horario reservado
+    const maxHora = Math.max(...reserva.horas.map((h) => parseInt(h, 10)));
+    const endHour = maxHora + 1; // fin del bloque (e.g., 12 => termina 13:00)
 
-    if (fechaReserva < ahora) {
-        // Si la fecha ya pasó
-        return true;
-    }
+    // Fin de la reserva en hora local
+    const end = new Date(y, m, d, endHour, 0, 0, 0);
+    const now = new Date();
 
-    if (fechaReserva === ahora) {
-        const horaActual = ahora.getHours();
-        if (ultimaHora < horaActual) {
-            // Si es hoy y la última hora ya pasó
-            return true;
-        }
-    }
-
-    return false;
+    // Expira si ya pasó el final del último bloque
+    return now.getTime() >= end.getTime();
 }
 
 //PLANTILLAS DE CORREOS:

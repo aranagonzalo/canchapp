@@ -10,9 +10,7 @@ const layout = ({
 }>) => {
     return (
         <div>
-            <APIProvider
-                apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY as string}
-            >
+            <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS as string}>
                 {children}
             </APIProvider>
         </div>

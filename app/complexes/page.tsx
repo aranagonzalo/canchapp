@@ -54,7 +54,7 @@ export default function ComplejosPage() {
             return geocodeCache.get(direccion)!;
         }
 
-        const apiKey = "AIzaSyBH5zGazn9Bl_I7tADSVsLZ3eEOEqP5MOU";
+        const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY;
         const response = await fetch(
             `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
                 direccion

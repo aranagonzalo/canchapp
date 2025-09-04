@@ -324,7 +324,7 @@ export default function EquiposDisponibles({
                                                 }
                                                 className="text-white bg-gradient-to-r from-custom-dark-green to-custom-green px-2 py-1 rounded font-medium text-xs cursor-pointer hover:from-emerald-700 hover:to-emerald-600"
                                             >
-                                                Enviar solicitud
+                                                Solicitud unirse
                                             </button>
                                         )}
                                     </>
@@ -347,7 +347,7 @@ export default function EquiposDisponibles({
                                     onClick={() => handleRivalModal(equipo)}
                                     className="text-white bg-gradient-to-r from-custom-dark-green to-custom-green px-2 py-1 rounded font-medium text-xs cursor-pointer hover:from-emerald-700 hover:to-emerald-600"
                                 >
-                                    Invitar
+                                    Invitar rival
                                 </button>
                             </TableCell>
                         </TableRow>

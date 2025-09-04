@@ -197,13 +197,9 @@ export default function ComplejosPage() {
                         <div className="h-[500px] w-full rounded-xl overflow-hidden border border-gray-700">
                             <GoogleMap
                                 id="main-map"
-                                center={
-                                    geoPosition ?? {
-                                        lat: -27.46,
-                                        lng: -58.98,
-                                    }
-                                }
-                                zoom={13}
+                                defaultCenter={{ lat: -27.46, lng: -58.98 }}
+                                defaultZoom={13}
+                                gestureHandling="greedy"
                                 className="w-full h-full"
                             >
                                 {selected && (

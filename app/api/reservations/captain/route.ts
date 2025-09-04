@@ -41,6 +41,46 @@ interface ReservaEquipo {
 const toOne = <T>(x: T | T[] | null | undefined): T | null =>
     Array.isArray(x) ? x[0] ?? null : x ?? null;
 
+// Zona horaria base (Perú no tiene DST)
+const TZ = "America/Lima";
+const PERU_OFFSET = "-05:00";
+
+function getNextHourCutoffLima(): Date {
+    const now = new Date();
+    const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: TZ,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+    })
+        .formatToParts(now)
+        .reduce<Record<string, string>>((acc, p) => {
+            if (p.type !== "literal") acc[p.type] = p.value;
+            return acc;
+        }, {});
+    const ymd = `${parts.year}-${parts.month}-${parts.day}`;
+    // base en la hora actual (00 minutos), con offset de Perú
+    const base = new Date(`${ymd}T${parts.hour}:00:00${PERU_OFFSET}`);
+    // si hay minutos > 0, saltamos a la siguiente hora
+    if (parseInt(parts.minute, 10) > 0)
+        base.setUTCHours(base.getUTCHours() + 1);
+    return base;
+}
+
+function getReservaStartUTC(
+    fecha: string,
+    horas: string[] | null | undefined
+): Date | null {
+    if (!fecha || !horas?.length) return null;
+    const h0 = parseInt(horas[0], 10);
+    if (Number.isNaN(h0)) return null;
+    const iso = `${fecha}T${String(h0).padStart(2, "0")}:00:00${PERU_OFFSET}`;
+    return new Date(iso); // objeto Date en UTC
+}
+
 export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const id = searchParams.get("id");
@@ -92,7 +132,8 @@ export async function GET(req: NextRequest) {
             )
             .in("id_equipo", id_equipos)
             .eq("es_creador", true) // solo reservas creadas por tu equipo
-            .eq("reservas.is_active", true)) as { // filtra en BD por reservas activas
+            .eq("reservas.is_active", true)) as {
+            // filtra en BD por reservas activas
             data: ReservaEquipo[] | null;
             error: any;
         };
@@ -156,7 +197,19 @@ export async function GET(req: NextRequest) {
                 abiertas.has(r.reserva.id)
         );
 
-        if (!reservaEquiposFiltradas.length) {
+        // ⬇️ NUEVO: filtrar por “empiezan desde la próxima hora (Perú)”
+        const cutoff = getNextHourCutoffLima();
+        const reservaEquiposDesdeProximaHora = reservaEquiposFiltradas.filter(
+            (r) => {
+                const start = getReservaStartUTC(
+                    r.reserva?.fecha as string,
+                    r.reserva?.horas as string[]
+                );
+                return !!start && start.getTime() >= cutoff.getTime();
+            }
+        );
+
+        if (!reservaEquiposDesdeProximaHora.length) {
             return NextResponse.json([]);
         }
 
@@ -226,30 +279,33 @@ export async function GET(req: NextRequest) {
             canchaData = data ?? [];
         }
 
-        // 4) Formatear respuesta solo con reservas activas y sin rival
-        const reservasEnriquecidas = reservaEquiposFiltradas.map((res) => {
-            const r = res.reserva;
-            const complejo = complejoData.find(
-                (c) => c.id_complejo === r?.id_complejo
-            );
-            const cancha = canchaData.find((c) => c.id_cancha === r?.id_cancha);
-
-            return {
-                id_reserva: r?.id,
-                fecha: r?.fecha,
-                horas: r?.horas,
-                is_active: r?.is_active,
-                nombre_equipo: res.equipo?.nombre_equipo ?? "Sin equipo",
-                id_equipo: res.equipo?.id_equipo,
-                id_admin: complejo?.id_admin ?? null,
-                mail_admin: complejo?.administrador?.mail ?? null,
-                nombre_complejo: complejo?.nombre_complejo ?? "",
-                direccion_complejo: complejo?.direccion ?? "",
-                telefono_complejo: complejo?.telefono ?? "",
-                nombre_cancha: cancha?.nombre_cancha ?? "",
-                es_creador: res.es_creador,
-            };
-        });
+        // 4) Formatear respuesta solo con reservas activas, sin rival y desde la próxima hora
+        const reservasEnriquecidas = reservaEquiposDesdeProximaHora.map(
+            (res) => {
+                const r = res.reserva;
+                const complejo = complejoData.find(
+                    (c) => c.id_complejo === r?.id_complejo
+                );
+                const cancha = canchaData.find(
+                    (c) => c.id_cancha === r?.id_cancha
+                );
+                return {
+                    id_reserva: r?.id,
+                    fecha: r?.fecha,
+                    horas: r?.horas,
+                    is_active: r?.is_active,
+                    nombre_equipo: res.equipo?.nombre_equipo ?? "Sin equipo",
+                    id_equipo: res.equipo?.id_equipo,
+                    id_admin: complejo?.id_admin ?? null,
+                    mail_admin: complejo?.administrador?.mail ?? null,
+                    nombre_complejo: complejo?.nombre_complejo ?? "",
+                    direccion_complejo: complejo?.direccion ?? "",
+                    telefono_complejo: complejo?.telefono ?? "",
+                    nombre_cancha: cancha?.nombre_cancha ?? "",
+                    es_creador: res.es_creador,
+                };
+            }
+        );
 
         return NextResponse.json(reservasEnriquecidas);
     } catch (err) {

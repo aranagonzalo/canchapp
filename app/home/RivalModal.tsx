@@ -221,6 +221,7 @@ export default function RivalModal({ equipo, open, onClose }: RivalModalProps) {
                                         </p>
                                         <Label>Mensaje: </Label>
                                         <Input
+                                            className="border border-gray-600 bg-black/[0.1]"
                                             value={
                                                 mensajes[res.id_reserva] ?? ""
                                             }

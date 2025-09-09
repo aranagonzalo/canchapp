@@ -140,11 +140,15 @@ export default function ReceivedInvitationsTable() {
 
                                 {entry.estado === "pendiente" ? (
                                     <TableCell className="text-amber-500">
-                                        {entry.estado}
+                                        Pendiente
+                                    </TableCell>
+                                ) : entry.estado === "rechazada" ? (
+                                    <TableCell className="text-red-500">
+                                        Rechazada
                                     </TableCell>
                                 ) : (
                                     <TableCell className="text-custom-green">
-                                        {entry.estado}
+                                        Aceptada
                                     </TableCell>
                                 )}
 

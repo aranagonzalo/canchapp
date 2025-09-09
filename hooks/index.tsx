@@ -38,7 +38,9 @@ export function useNotifications() {
         return () => clearInterval(interval);
     }, [userId]);
 
-    const hayNoLeidas = notificaciones.some((n) => !n.leido);
+    const hayNoLeidas = notificaciones
+        ? notificaciones?.some((n) => !n.leido)
+        : false;
 
     const marcarComoVisto = async (id: number) => {
         await fetch(`/api/notificaciones/marcar-visto?id=${id}`, {

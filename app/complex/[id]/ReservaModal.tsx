@@ -62,6 +62,7 @@ export function ReservaModal({
                 setDisabledDates(fechas);
             });
     }, [idCancha]);
+
     const [equiposCapitan, setEquiposCapitan] = useState<any[]>([]);
     const [loadingEquipos, setLoadingEquipos] = useState(true);
     const [selectedEquipoId, setSelectedEquipoId] = useState<

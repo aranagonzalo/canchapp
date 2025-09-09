@@ -51,10 +51,7 @@ export async function GET(req: NextRequest) {
             };
         });
 
-        // 5. Filtrar por estado pendiente
-        const pendientes = enriquecidas.filter((i) => i.estado === "Pendiente");
-
-        return NextResponse.json(pendientes);
+        return NextResponse.json(enriquecidas);
     } catch (error) {
         console.error("Error en /api/invitaciones/recibidas:", error);
         return NextResponse.json(

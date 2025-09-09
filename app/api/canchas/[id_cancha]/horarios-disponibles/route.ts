@@ -33,14 +33,14 @@ export async function GET(
 
         const id_complejo = cancha.id_complejo;
 
-        const diaSemana = new Date(fecha).getDay(); // 0 = domingo, 6 = sábado
+        const diaSemanaUTC = new Date(`${fecha}T00:00:00Z`).getUTCDay();
 
         // 2. Obtener las horas habilitadas para ese día
         const { data: horarios, error: errorHorario } = await db
             .from("horarios_complejo")
             .select("hora_apertura, hora_cierre")
             .eq("id_complejo", id_complejo)
-            .eq("dia_semana", diaSemana);
+            .eq("dia_semana", diaSemanaUTC);
 
         if (errorHorario || !horarios || horarios.length === 0) {
             return NextResponse.json({
@@ -56,30 +56,33 @@ export async function GET(
         );
 
         // 3. Obtener las horas ya reservadas para esa cancha y fecha
-        const { data: reserva, error: errorAgenda } = await db
+        const { data: reservaRows, error: errorReserva } = await db
             .from("reservas")
-            .select("horas")
+            .select("horas, is_active")
             .eq("id_cancha", id_cancha)
-            .eq("fecha", fecha);
+            .eq("fecha", fecha)
+            .eq("is_active", true);
 
-        if (errorAgenda) {
+        if (errorReserva) {
             return NextResponse.json(
                 { error: "Error al cargar agenda" },
                 { status: 500 }
             );
         }
 
-        const horasOcupadas = reserva.flatMap((r) => r.horas);
+        const horasOcupadasSet = new Set(
+            (reservaRows ?? []).flatMap((r: any) => r?.horas ?? [])
+        );
 
-        const horasDisponibles = horasHabilitadas.filter(
-            (h) => !horasOcupadas.includes(h)
+        const horas_disponibles = horasHabilitadas.filter(
+            (h) => !horasOcupadasSet.has(h)
         );
 
         return NextResponse.json({
             id_cancha,
             fecha,
-            horas_disponibles: horasDisponibles,
-            horasOcupadas,
+            horas_disponibles,
+            horasOcupadas: Array.from(horasOcupadasSet), // útil para debug
         });
     } catch (err) {
         console.error("Error en horas-disponibles:", err);

@@ -145,8 +145,10 @@ export default function EquiposDisponiblesModal({
                     } catch (err) {
                         console.log(err);
                     }
+                    toast.success(result.message || "Invitación enviada");
+                } else {
+                    toast.info(result.message || "Invitación no enviada");
                 }
-                toast.success(result.message || "Invitación enviada");
             }
 
             await refetchEquipos();

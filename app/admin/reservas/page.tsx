@@ -4,7 +4,7 @@ import FullCalendar from "@fullcalendar/react";
 import esLocale from "@fullcalendar/core/locales/es";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useUser } from "@/context/userContext";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
+import BlockCourtModal from "./BlockCourtModal";
 
 interface Reserva {
     id: number;
@@ -28,6 +29,8 @@ interface Reserva {
     capitan: string;
     telefono: string;
     is_active: boolean;
+    is_block?: boolean; // <-- nuevo
+    estado?: string;
 }
 
 interface Cancha {
@@ -42,6 +45,7 @@ interface Cancha {
 
 export default function CalendarioReservas() {
     const { user } = useUser();
+    const [modalOpen, setModalOpen] = useState(false);
     const [reservas, setReservas] = useState<Reserva[]>([]);
     const [canchas, setCanchas] = useState<Cancha[]>([]);
     const [loading, setLoading] = useState(true);
@@ -50,6 +54,38 @@ export default function CalendarioReservas() {
         null
     );
     const [deleting, setDeleting] = useState(false);
+
+    // Id numérico y nombre de la cancha seleccionada
+    const selectedCanchaId = canchaSeleccionada
+        ? Number(canchaSeleccionada)
+        : null;
+
+    const selectedCanchaName = useMemo(() => {
+        const c = canchas.find(
+            (x) => x.id_cancha.toString() === canchaSeleccionada
+        );
+        return c?.nombre_cancha;
+    }, [canchas, canchaSeleccionada]);
+
+    // Opciones para multi-selección en el modal
+    const misCanchasDelAdmin = useMemo(
+        () =>
+            canchas.map((c) => ({
+                id_cancha: c.id_cancha,
+                nombre_cancha: c.nombre_cancha,
+            })),
+        [canchas]
+    );
+
+    // Fechas por defecto: hoy → fin de año (ajusta si quieres)
+    const todayISO = useMemo(() => new Date().toISOString().slice(0, 10), []);
+    const endOfYearISO = useMemo(
+        () =>
+            new Date(new Date().getFullYear(), 11, 31)
+                .toISOString()
+                .slice(0, 10),
+        []
+    );
 
     const fetchCanchas = async () => {
         if (!user?.id) return;
@@ -130,28 +166,45 @@ export default function CalendarioReservas() {
                 </p>
 
                 {canchas.length > 0 && (
-                    <div className="mb-6 w-full max-w-sm">
-                        <Select
-                            onValueChange={(value) =>
-                                setCanchaSeleccionada(value)
-                            }
-                            value={canchaSeleccionada || ""}
-                        >
-                            <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Selecciona una cancha" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {canchas.map((c) => (
-                                    <SelectItem
-                                        key={c.id_cancha}
-                                        value={c.id_cancha.toString()}
-                                    >
-                                        {c.nombre_cancha}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    <>
+                        <p className="mb-1 text-gray-300 font-normal text-sm">
+                            Cancha:
+                        </p>
+                        <div className="mb-6 w-full max-w-sm flex gap-2">
+                            <Select
+                                onValueChange={(value) =>
+                                    setCanchaSeleccionada(value)
+                                }
+                                value={canchaSeleccionada || ""}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Selecciona una cancha" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {canchas.map((c) => (
+                                        <SelectItem
+                                            key={c.id_cancha}
+                                            value={c.id_cancha.toString()}
+                                        >
+                                            {c.nombre_cancha}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <div className="flex items-center gap-2">
+                                {/* tu Select de cancha aquí */}
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() => {
+                                        setModalOpen(true);
+                                    }}
+                                >
+                                    Bloquear Horarios
+                                </Button>
+                            </div>
+                        </div>
+                    </>
                 )}
 
                 {canchas.length === 0 ? (
@@ -177,21 +230,35 @@ export default function CalendarioReservas() {
                         }}
                         height="auto"
                         events={reservas.map((r) => ({
-                            id: r.id.toString(),
+                            id: `${r.id}-${r.start}`, // <- id único por hora
                             title: r.title,
                             start: r.start,
                             end: r.end,
+                            extendedProps: { reserva: r }, // <- te evita buscar luego
                         }))}
                         eventContent={(arg) => {
-                            const reserva = reservas.find(
-                                (r) => r.id.toString() === arg.event.id
-                            );
+                            const reserva = (arg.event.extendedProps as any)
+                                ?.reserva as Reserva | undefined;
                             const isActive = reserva?.is_active;
+                            const isBlock = (reserva as any)?.is_block;
 
-                            const baseColor = isActive ? "#009669" : "#6b7280";
-                            const hoverColor = isActive ? "#00664d" : "#4b5563"; // shade más oscuro
+                            const baseColor = isBlock
+                                ? "#f59e0b" // amber para bloqueos
+                                : isActive
+                                ? "#009669"
+                                : "#6b7280";
 
-                            const textColor = isActive ? "white" : "#ccd";
+                            const hoverColor = isBlock
+                                ? "#d97706"
+                                : isActive
+                                ? "#00664d"
+                                : "#4b5563";
+
+                            const textColor = isBlock
+                                ? "#1f2937"
+                                : isActive
+                                ? "white"
+                                : "#ccd"; // bloqueos con texto oscuro
 
                             const startHour = arg.event.start
                                 ? arg.event.start.toLocaleTimeString("es-PE", {
@@ -208,7 +275,11 @@ export default function CalendarioReservas() {
                                   })
                                 : "";
 
-                            const status = !isActive ? " (Cancelada)" : "";
+                            const status = isBlock
+                                ? " (Bloqueado)"
+                                : !isActive
+                                ? " (Cancelada)"
+                                : "";
 
                             return {
                                 html: `
@@ -239,9 +310,8 @@ export default function CalendarioReservas() {
                         }}
                         eventBorderColor="#1e2939"
                         eventClick={(info) => {
-                            const reserva = reservas.find(
-                                (r) => r.id.toString() === info.event.id
-                            );
+                            const reserva = (info.event.extendedProps as any)
+                                ?.reserva as Reserva | undefined;
                             if (reserva) setSelected(reserva);
                         }}
                         locale="es"
@@ -265,10 +335,16 @@ export default function CalendarioReservas() {
                         <DialogContent className="bg-[#1a1f2b] text-gray-400 border border-gray-800">
                             <DialogTitle className="text-white mb-4">
                                 Detalle de Reserva{" "}
-                                {!selected.is_active && (
-                                    <span className="ml-2 bg-white text-black text-[11px] py-1 px-2 rounded-full">
-                                        Cancelada
+                                {selected.is_block ? (
+                                    <span className="ml-2 bg-amber-500/20 text-amber-400 text-[11px] py-1 px-2 rounded-full">
+                                        Bloqueo (Admin)
                                     </span>
+                                ) : (
+                                    !selected.is_active && (
+                                        <span className="ml-2 bg-white text-black text-[11px] py-1 px-2 rounded-full">
+                                            Cancelada
+                                        </span>
+                                    )
                                 )}
                             </DialogTitle>
 
@@ -297,18 +373,26 @@ export default function CalendarioReservas() {
                                 </span>{" "}
                                 {new Date(selected.end).toLocaleString()}
                             </p>
-                            <a
-                                href={`https://wa.me/${formatPhoneForWhatsApp(
-                                    selected.telefono
-                                )}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-full font-medium flex gap-2 bg-[#1b8d4a] hover:bg-[#007933] justify-center items-center text-white px-2.5 py-2 rounded-md text-sm transition"
-                            >
-                                <img src="/whatsapp.png" className="w-5 h-5" />{" "}
-                                Contactar por WhatsApp
-                            </a>
-                            {selected.is_active && (
+
+                            {/* SOLO para reservas de equipo (no bloqueos) */}
+                            {!selected.is_block && selected.telefono && (
+                                <a
+                                    href={`https://wa.me/${formatPhoneForWhatsApp(
+                                        selected.telefono
+                                    )}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-full font-medium flex gap-2 bg-[#1b8d4a] hover:bg-[#007933] justify-center items-center text-white px-2.5 py-2 rounded-md text-sm transition"
+                                >
+                                    <img
+                                        src="/whatsapp.png"
+                                        className="w-5 h-5"
+                                    />{" "}
+                                    Contactar por WhatsApp
+                                </a>
+                            )}
+
+                            {!selected.is_block && selected.is_active && (
                                 <Button
                                     variant="destructive"
                                     className="cursor-pointer"
@@ -325,6 +409,17 @@ export default function CalendarioReservas() {
                         </DialogContent>
                     </Dialog>
                 )}
+
+                <BlockCourtModal
+                    open={modalOpen}
+                    onOpenChange={setModalOpen}
+                    selectedCanchaId={selectedCanchaId}
+                    selectedCanchaName={selectedCanchaName}
+                    canchasOptions={misCanchasDelAdmin}
+                    defaultDateFrom={todayISO}
+                    defaultDateTo={endOfYearISO}
+                    onApplied={fetchReservas}
+                />
             </div>
         </div>
     );

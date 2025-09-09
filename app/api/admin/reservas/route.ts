@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
         id,
         is_active,
         fecha,
-        horas,
+        horas, 
         id_complejo,
         id_cancha,
         reserva_equipo (
@@ -59,27 +59,55 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Error interno" }, { status: 500 });
     }
 
-    const eventos = reservas.flatMap((res: any) => {
-        const creador = res.reserva_equipo?.find((e: any) => e.es_creador);
+    // key: cancha-fecha-hora  -> evitamos duplicados (si hay bloqueos forzados)
+    const bySlot = new Map<string, any>();
 
-        return res.horas.map((hora: string) => {
+    for (const res of reservas as any[]) {
+        const isBlock =
+            !Array.isArray(res.reserva_equipo) ||
+            res.reserva_equipo.length === 0;
+        const creador = !isBlock
+            ? res.reserva_equipo.find((e: any) => e.es_creador)
+            : null;
+
+        for (const hora of (res.horas ?? []) as string[]) {
             const start = `${res.fecha}T${hora}:00:00`;
-            const endHour = (parseInt(hora) + 1).toString().padStart(2, "0");
+            const endHour = String(parseInt(hora, 10) + 1).padStart(2, "0");
             const end = `${res.fecha}T${endHour}:00:00`;
 
-            return {
+            const key = `${res.id_cancha}__${res.fecha}__${hora}`;
+
+            const event = {
                 id: res.id,
-                title: creador?.equipo?.nombre_equipo ?? "Sin nombre",
+                title: isBlock
+                    ? "Bloqueo (Admin)"
+                    : creador?.equipo?.nombre_equipo ?? "Sin nombre",
                 start,
                 end,
-                id_equipo: creador?.equipo?.id_equipo,
+                id_equipo: isBlock ? null : creador?.equipo?.id_equipo,
                 is_active: res.is_active,
-                capitan: creador?.equipo?.jugador?.nombre ?? "Sin nombre",
-                telefono: creador?.equipo?.jugador?.telefono ?? "Sin número",
-                estado: res.estado,
+                capitan: isBlock
+                    ? ""
+                    : creador?.equipo?.jugador?.nombre ?? "Sin nombre",
+                telefono: isBlock
+                    ? ""
+                    : creador?.equipo?.jugador?.telefono ?? "Sin número",
+                estado: isBlock ? "Bloqueado" : res.estado, // res.estado puede no existir; no es crítico
+                is_block: isBlock, // <- BANDERA PARA EL FRONT
             };
-        });
-    });
 
+            // Si ya existe algo en ese slot, prioriza reserva de equipo sobre bloqueo
+            if (bySlot.has(key)) {
+                const existing = bySlot.get(key);
+                if (existing.is_block && !event.is_block) {
+                    bySlot.set(key, event); // equipo reemplaza bloqueo
+                }
+            } else {
+                bySlot.set(key, event);
+            }
+        }
+    }
+
+    const eventos = Array.from(bySlot.values());
     return NextResponse.json(eventos);
 }

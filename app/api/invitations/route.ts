@@ -11,12 +11,17 @@ export async function POST(req: NextRequest) {
             .from("invitaciones")
             .select("*")
             .eq("id_jugador_invitado", id_jugador)
-            .eq("id_equipo", id_equipo);
+            .eq("id_equipo", id_equipo)
+            .eq("estado", "Pendiente");
 
         if (existingInv && existingInv.length > 0) {
-            return NextResponse.json({
-                message: "Ya enviaste una invitación a este jugador",
-            });
+            return NextResponse.json(
+                {
+                    message:
+                        "Ya enviaste una invitación a este jugador y está pendiente.",
+                },
+                { status: 500 }
+            );
         }
 
         // Verifica si ya está en el equipo

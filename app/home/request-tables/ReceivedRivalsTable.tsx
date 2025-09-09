@@ -58,6 +58,7 @@ export default function ReceivedInvitationsTable() {
     const [data, setData] = useState<Invitations[]>([]);
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
+    const [rejectModalOpen, setRejectModalOpen] = useState(false);
     const [selectedInvitation, setSelectedInvitation] =
         useState<Invitations | null>(null);
     const [loadingAction, setLoadingAction] = useState(false);
@@ -157,7 +158,7 @@ export default function ReceivedInvitationsTable() {
                                     {entry.nombre_equipo_invitador}
                                 </TableCell>
                                 {entry.estado === "pendiente" ? (
-                                    <TableCell className="text-amber-500">
+                                    <TableCell className="gap-1 text-white">
                                         <Button
                                             variant="secondary"
                                             className="cursor-pointer"
@@ -168,10 +169,24 @@ export default function ReceivedInvitationsTable() {
                                         >
                                             Aceptar
                                         </Button>
+                                        <Button
+                                            variant="link"
+                                            className="cursor-pointer text-white"
+                                            onClick={() => {
+                                                setSelectedInvitation(entry);
+                                                setRejectModalOpen(true);
+                                            }}
+                                        >
+                                            Rechazar
+                                        </Button>
+                                    </TableCell>
+                                ) : entry.estado === "rechazada" ? (
+                                    <TableCell className="text-red-500">
+                                        Rechazada
                                     </TableCell>
                                 ) : (
                                     <TableCell className="text-custom-green">
-                                        Reserva Aceptada
+                                        Aceptada
                                     </TableCell>
                                 )}
                                 <TableCell className="text-white">
@@ -185,6 +200,7 @@ export default function ReceivedInvitationsTable() {
                     </TableBody>
                 </Table>
             )}
+            {/*modal de aceptacion*/}
             <Dialog open={modalOpen} onOpenChange={setModalOpen}>
                 <DialogContent className="bg-[#1f2937] border border-gray-700 text-white">
                     <DialogHeader>
@@ -279,8 +295,8 @@ export default function ReceivedInvitationsTable() {
                                                 "CanchApp - ¡Invitación de partido aceptada!",
                                             html: html,
                                         });
-                                        toast.success(
-                                            "¡Email de notificación enviado!"
+                                        toast.info(
+                                            "Email de notificación enviado."
                                         );
                                     } catch (err) {
                                         console.log(err);
@@ -292,6 +308,124 @@ export default function ReceivedInvitationsTable() {
                                     );
                                 } finally {
                                     setModalOpen(false);
+                                    setLoadingAction(false);
+                                    setSelectedInvitation(null);
+                                }
+                            }}
+                            disabled={loadingAction}
+                        >
+                            {loadingAction ? "Aceptando..." : "Aceptar"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+            {/*modal de rechazo*/}
+            <Dialog open={rejectModalOpen} onOpenChange={setRejectModalOpen}>
+                <DialogContent className="bg-[#1f2937] border border-gray-700 text-white">
+                    <DialogHeader>
+                        <DialogTitle>¿Rechazar invitación?</DialogTitle>
+                    </DialogHeader>
+                    <div className="text-sm text-gray-300">
+                        Estás por rechazar la invitación del equipo{" "}
+                        <strong>
+                            {selectedInvitation?.nombre_equipo_invitador}
+                        </strong>
+                        .
+                        <br />
+                        Esta acción no puede ser revertida.
+                    </div>
+                    <DialogFooter className="pt-4 flex gap-2 justify-end">
+                        <Button
+                            variant="ghost"
+                            onClick={() => setModalOpen(false)}
+                            disabled={loadingAction}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            variant="default"
+                            onClick={async () => {
+                                if (!selectedInvitation) return;
+                                console.log(selectedInvitation);
+                                setLoadingAction(true);
+                                try {
+                                    const res = await fetch(
+                                        `/api/reservations/reject?invitacion_id=${selectedInvitation.id}`,
+                                        { method: "POST" }
+                                    );
+                                    if (!res.ok) throw new Error();
+                                    toast.info(
+                                        "Invitación rechazada con éxito"
+                                    );
+                                    // notificar al capitan que invitó que se ha aceptado su invitación.
+                                    try {
+                                        notificar({
+                                            titulo: "Invitación de partido rechazada",
+                                            mensaje: `El equipo: '${
+                                                selectedInvitation.nombre_equipo_destinatario
+                                            }' ha rechazado tu invitación para jugar un partido en ${
+                                                selectedInvitation.reserva
+                                                    .nombre_complejo
+                                            } en la cancha '${
+                                                selectedInvitation.reserva
+                                                    .nombre_cancha
+                                            }' el ${
+                                                selectedInvitation.reserva.fecha
+                                            } a las ${formatHourRange(
+                                                selectedInvitation.reserva.horas
+                                            )}`,
+                                            url: "/home?tab=solicitudes",
+                                            destinatarios: [
+                                                {
+                                                    id: selectedInvitation.id_capitan_invitador,
+                                                    tipo: "jugador",
+                                                },
+                                            ],
+                                        });
+                                    } catch (err) {
+                                        console.log(err);
+                                    }
+
+                                    // enviar notificacion por correo
+                                    const html =
+                                        getInvitacionPartidoEmailTemplate({
+                                            titulo: "Invitación de partido rechazada",
+                                            mensaje: `¡Hola! Te saludamos desde CanchApp para notificarte que El equipo: '${
+                                                selectedInvitation.nombre_equipo_destinatario
+                                            }' ha rechazado tu invitación para jugar un partido en ${
+                                                selectedInvitation.reserva
+                                                    .nombre_complejo
+                                            } en la cancha '${
+                                                selectedInvitation.reserva
+                                                    .nombre_cancha
+                                            }' el ${
+                                                selectedInvitation.reserva.fecha
+                                            } a las ${formatHourRange(
+                                                selectedInvitation.reserva.horas
+                                            )}.`,
+                                            url: `https://canchapp.vercel.app/home?tab=solicitudes`,
+                                        });
+
+                                    try {
+                                        await sendEmail({
+                                            to: selectedInvitation.mail_capitan_invitador,
+                                            subject:
+                                                "CanchApp - Invitación de partido rechazada",
+                                            html: html,
+                                        });
+                                        toast.info(
+                                            "Email de notificación enviado."
+                                        );
+                                    } catch (err) {
+                                        console.log(err);
+                                    }
+                                    fetchData(); // refresca la tabla
+                                } catch {
+                                    toast.error(
+                                        "Error al aceptar la invitación"
+                                    );
+                                } finally {
+                                    setRejectModalOpen(false);
                                     setLoadingAction(false);
                                     setSelectedInvitation(null);
                                 }

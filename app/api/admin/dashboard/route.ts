@@ -37,7 +37,7 @@ export async function GET(req: Request) {
     const hace30 = new Date(hoy.getTime() - 30 * 86400000);
 
     const { data: reservas } = await db
-        .from("reserva")
+        .from("reservas")
         .select("fecha")
         .eq("id_complejo", id_complejo);
 
@@ -54,7 +54,7 @@ export async function GET(req: Request) {
 
     // Fetch reseñas
     const { data: resenasRaw } = await db
-        .from("resena")
+        .from("reviews_complejo")
         .select("puntuacion")
         .eq("id_complejo", id_complejo);
 

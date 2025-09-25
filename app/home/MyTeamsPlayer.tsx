@@ -150,6 +150,7 @@ export default function MyTeamsPlayer({ id_jugador }: { id_jugador: number }) {
 
             toast.success("Equipo eliminado correctamente");
             fetchEquipos();
+            setModalOpen(false);
         } catch (err) {
             console.error(err);
             toast.error("No se pudo eliminar el equipo");

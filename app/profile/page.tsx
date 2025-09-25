@@ -114,7 +114,7 @@ export default function ProfilePage() {
                                 className="w-full mt-1 p-2 bg-[#1a1f2b] text-white rounded-md placeholder-gray-500 border border-gray-800 focus:outline-none focus:ring-2 focus:ring-custom-green"
                             />
                         </div>
-                        {user?.tipo === "jugador" && (
+                        {/* {user?.tipo === "jugador" && (
                             <div>
                                 <Label className="mb-1">Sexo</Label>
                                 <input
@@ -124,7 +124,7 @@ export default function ProfilePage() {
                                     className="w-full mt-1 p-2 bg-[#1a1f2b] text-white rounded-md placeholder-gray-500 border border-gray-800 focus:outline-none focus:ring-2 focus:ring-custom-green"
                                 />
                             </div>
-                        )}
+                        )} */}
 
                         <div>
                             <Label className="mb-1">Teléfono</Label>

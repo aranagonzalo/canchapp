@@ -123,6 +123,12 @@ export default function CalendarioReservas() {
         fetchReservas();
     }, [user?.id, canchaSeleccionada]);
 
+    const isPastReserva = (reserva: Reserva) => {
+        const now = new Date();
+        const endDate = new Date(reserva.end);
+        return endDate < now; // ya terminó
+    };
+
     const handleDeleteReserva = async () => {
         if (!selected) return;
 
@@ -239,26 +245,35 @@ export default function CalendarioReservas() {
                         eventContent={(arg) => {
                             const reserva = (arg.event.extendedProps as any)
                                 ?.reserva as Reserva | undefined;
-                            const isActive = reserva?.is_active;
-                            const isBlock = (reserva as any)?.is_block;
+                            if (!reserva) return;
 
-                            const baseColor = isBlock
-                                ? "#f59e0b" // amber para bloqueos
+                            const isActive = reserva.is_active;
+                            const isBlock = reserva.is_block;
+                            const isPast = isPastReserva(reserva);
+
+                            // Colores base
+                            let baseColor = isBlock
+                                ? "#f59e0b"
                                 : isActive
                                 ? "#009669"
                                 : "#6b7280";
-
-                            const hoverColor = isBlock
+                            let hoverColor = isBlock
                                 ? "#d97706"
                                 : isActive
                                 ? "#00664d"
                                 : "#4b5563";
-
-                            const textColor = isBlock
+                            let textColor = isBlock
                                 ? "#1f2937"
                                 : isActive
                                 ? "white"
-                                : "#ccd"; // bloqueos con texto oscuro
+                                : "#ccd";
+
+                            // Si ya pasó, forzamos gris
+                            if (isPast) {
+                                baseColor = "#6b7280"; // gris
+                                hoverColor = "#4b5563";
+                                textColor = "#d1d5db"; // gris claro
+                            }
 
                             const startHour = arg.event.start
                                 ? arg.event.start.toLocaleTimeString("es-PE", {
@@ -279,33 +294,35 @@ export default function CalendarioReservas() {
                                 ? " (Bloqueado)"
                                 : !isActive
                                 ? " (Cancelada)"
+                                : isPast
+                                ? " (Finalizada)"
                                 : "";
 
                             return {
                                 html: `
-                                <div 
-                                    style="
-                                        height: 100%;
-                                        cursor: pointer;
-                                        background-color: ${baseColor};
-                                        color: ${textColor};
-                                        padding: 4px 6px;
-                                        border-radius: 4px;
-                                        font-size: 12px;
-                                        line-height: 1.2;
-                                        display: flex;
-                                        flex-direction: column;
-                                        justify-content: center;
-                                        transition: background-color 0.2s ease;
-                                    "
-                                    onmouseover="this.style.backgroundColor='${hoverColor}'"
-                                    onmouseout="this.style.backgroundColor='${baseColor}'"
-                                >
-                                    <span>${status}</span>
-                                    <strong style="font-size: 11px;">${startHour} - ${endHour}</strong>
-                                    <span>${arg.event.title}</span>
-                                </div>
-                                `,
+                                        <div 
+                                            style="
+                                                height: 100%;
+                                                cursor: pointer;
+                                                background-color: ${baseColor};
+                                                color: ${textColor};
+                                                padding: 4px 6px;
+                                                border-radius: 4px;
+                                                font-size: 12px;
+                                                line-height: 1.2;
+                                                display: flex;
+                                                flex-direction: column;
+                                                justify-content: center;
+                                                transition: background-color 0.2s ease;
+                                            "
+                                            onmouseover="this.style.backgroundColor='${hoverColor}'"
+                                            onmouseout="this.style.backgroundColor='${baseColor}'"
+                                        >
+                                            <span>${status}</span>
+                                            <strong style="font-size: 11px;">${startHour} - ${endHour}</strong>
+                                            <span>${arg.event.title}</span>
+                                        </div>
+                                    `,
                             };
                         }}
                         eventBorderColor="#1e2939"
@@ -392,20 +409,22 @@ export default function CalendarioReservas() {
                                 </a>
                             )}
 
-                            {!selected.is_block && selected.is_active && (
-                                <Button
-                                    variant="destructive"
-                                    className="cursor-pointer"
-                                    disabled={deleting}
-                                    onClick={handleDeleteReserva}
-                                >
-                                    {deleting ? (
-                                        <LoadingSpinner />
-                                    ) : (
-                                        "Cancelar Reserva"
-                                    )}
-                                </Button>
-                            )}
+                            {!selected.is_block &&
+                                selected.is_active &&
+                                !isPastReserva(selected) && (
+                                    <Button
+                                        variant="destructive"
+                                        className="cursor-pointer"
+                                        disabled={deleting}
+                                        onClick={handleDeleteReserva}
+                                    >
+                                        {deleting ? (
+                                            <LoadingSpinner />
+                                        ) : (
+                                            "Cancelar Reserva"
+                                        )}
+                                    </Button>
+                                )}
                         </DialogContent>
                     </Dialog>
                 )}

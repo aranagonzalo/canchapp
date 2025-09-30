@@ -17,6 +17,7 @@ export async function GET(
                 mail
                 )
             `);
+        console.log(equipos);
 
         if (errorEquipos || !equipos) {
             return NextResponse.json(

@@ -309,7 +309,7 @@ export default function ComplejoAdminProfile() {
                         placeholder="CUIT"
                         className="py-5 disabled:text-gray-500 disabled:border-gray-500 border-gray-400 shadow"
                     />
-                    <Input
+                    {/* <Input
                         disabled={!editMode}
                         type="number"
                         value={complejo.cant_canchas}
@@ -321,7 +321,7 @@ export default function ComplejoAdminProfile() {
                         }
                         placeholder="Cantidad de canchas"
                         className="py-5 disabled:text-gray-500 disabled:border-gray-500 border-gray-400 shadow"
-                    />
+                    /> */}
                     <Textarea
                         rows={10}
                         disabled={!editMode}
